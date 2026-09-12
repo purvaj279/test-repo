@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WANDERLORE — Secret Sanctuaries & Offbeat Odyssey</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: {
+                            950: '#06090e',
+                            900: '#0b0f17',
+                            850: '#111726',
+                            800: '#172033',
+                            700: '#222f49'
+                        },
+                        amberGold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706'
+                        },
+                        emeraldGlow: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-obsidian-950 text-slate-200 font-sans min-h-screen flex flex-col selection:bg-amberGold-500/30 selection:text-amberGold-400">
+
+    <!-- Top Announcement Bar: Leave No Trace Ethos -->
+    <div class="bg-gradient-to-r from-obsidian-900 via-amberGold-950/40 to-obsidian-900 border-b border-amberGold-500/20 py-1.5 px-4 text-xs text-center text-amber-200/80 flex items-center justify-center gap-3">
+        <span class="inline-flex items-center gap-1.5 font-mono">
+            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amberGold-400"></i>
+            ANTI-OVERTOURISM PLEDGE:
+        </span>
+        <span class="hidden sm:inline">Fragile coordinates are locked behind lore riddles. Tread lightly, pack out all waste, leave no trace.</span>
+        <span class="sm:hidden">Protect sanctuaries. Leave no trace.</span>
+    </div>
+
+    <!-- Personalized Header Bar -->
+    <header class="sticky top-0 z-40 bg-obsidian-900/90 backdrop-blur-md border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('explore')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amberGold-500/20 to-emeraldGlow-500/10 border border-amberGold-500/30 flex items-center justify-center shadow-lg shadow-amberGold-500/5 group">
+                    <i data-lucide="compass" class="w-6 h-6 text-amberGold-400 transition-transform duration-700 group-hover:rotate-180"></i>
+                </div>
+                <div>
+                    <h1 class="font-cinzel text-xl font-bold tracking-widest text-slate-100 flex items-center gap-2">
+                        WANDERLORE
+                        <span class="text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-full bg-emeraldGlow-500/10 text-emeraldGlow-400 border border-emeraldGlow-500/20 font-mono font-semibold">Offbeat</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-mono tracking-tight hidden sm:block">Untouched Sanctuaries & Lore Community</p>
+                </div>
+            </div>
+
+            <!-- View Navigation -->
+            <nav class="flex items-center gap-1 sm:gap-2">
+                <button id="nav-explore" onclick="switchView('explore')" class="nav-btn active flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                    <i data-lucide="map-pin" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Sanctuaries</span>
+                </button>
+                <button id="nav-commons" onclick="switchView('commons')" class="nav-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">The Commons & Tribes</span>
+                </button>
+                <button id="nav-journey" onclick="switchView('journey')" class="nav-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                    <i data-lucide="bookmark" class="w-4 h-4 text-amberGold-400"></i>
+                    <span class="hidden md:inline">My Journey</span>
+                    <span id="nav-bookmark-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-amberGold-500/20 text-amberGold-400 font-mono">0</span>
+                </button>
+                <button id="nav-passport" onclick="switchView('passport')" class="nav-btn flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Explorer Passport</span>
+                </button>
+            </nav>
+
+            <!-- Action Controls & Persona Switcher -->
+            <div class="flex items-center gap-3">
+                <!-- Ambient Audio Generator -->
+                <button id="ambient-audio-btn" onclick="toggleAmbientAudio()" title="Soundscapes of Solitude (Generative Web Audio)" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-obsidian-850 border border-slate-700/60 hover:border-amberGold-500/40 text-xs font-mono text-slate-300 transition-all">
+                    <i id="audio-icon" data-lucide="volume-x" class="w-4 h-4 text-slate-400"></i>
+                    <span id="audio-status" class="hidden xl:inline">Silence</span>
+                </button>
+
+                <!-- Persona Switcher Dropdown -->
+                <div class="relative">
+                    <button onclick="togglePersonaMenu()" id="persona-btn" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-obsidian-850 border border-amberGold-500/30 hover:border-amberGold-400 text-xs font-mono text-slate-200 transition-all">
+                        <div class="w-5 h-5 rounded-full bg-amberGold-500/20 border border-amberGold-500/40 flex items-center justify-center text-amberGold-400 text-[10px] font-bold" id="persona-avatar-letter">P</div>
+                        <span id="persona-name-label" class="font-semibold text-amberGold-400 hidden sm:inline">Purvaj</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+
+                    <!-- Persona Dropdown Menu -->
+                    <div id="persona-menu" class="hidden absolute right-0 mt-2 w-72 bg-obsidian-900 border border-slate-700 rounded-xl shadow-2xl p-2 z-50 space-y-1">
+                        <div class="text-[10px] font-mono text-slate-400 px-3 py-1 uppercase tracking-wider">Demo Explorer Personas:</div>
+                        <button onclick="selectPersona('purvaj')" class="w-full text-left p-2 rounded-lg hover:bg-obsidian-800 transition-colors flex items-center justify-between group">
+                            <div>
+                                <div class="font-bold text-xs text-amberGold-400 font-cinzel">Purvaj</div>
+                                <div class="text-[11px] text-slate-400">Astro-Backpacker & High Solitude</div>
+                            </div>
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amberGold-500/10 text-amberGold-400 border border-amberGold-500/20">Default</span>
+                        </button>
+                        <button onclick="selectPersona('maya')" class="w-full text-left p-2 rounded-lg hover:bg-obsidian-800 transition-colors flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-xs text-emeraldGlow-400 font-cinzel">Maya Lin</div>
+                                <div class="text-[11px] text-slate-400">Botanical Custodian & Sacred Groves</div>
+                            </div>
+                        </button>
+                        <button onclick="selectPersona('kenji')" class="w-full text-left p-2 rounded-lg hover:bg-obsidian-800 transition-colors flex items-center justify-between">
+                            <div>
+                                <div class="font-bold text-xs text-sky-400 font-cinzel">Kenji Sato</div>
+                                <div class="text-[11px] text-slate-400">Subterranean & Ghost Towns</div>
+                            </div>
+                        </button>
+                        <div class="border-t border-slate-800 pt-1 mt-1">
+                            <button onclick="openProfileModal()" class="w-full text-left p-2 rounded-lg hover:bg-obsidian-800 text-xs font-mono text-slate-300 flex items-center gap-2">
+                                <i data-lucide="user" class="w-3.5 h-3.5 text-amberGold-400"></i>
+                                Edit My Profile & Preferences
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contribute Spot Button -->
+                <button onclick="openSubmitModal()" class="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-amberGold-500 to-amber-600 hover:from-amberGold-400 hover:to-amber-500 text-obsidian-950 font-semibold text-xs tracking-wider uppercase transition-all shadow-md shadow-amberGold-500/10">
+                    <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+                    <span class="hidden lg:inline">Add Sanctuary</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+
+        <!-- ==================== VIEW 1: EXPLORE & COMPASS ==================== -->
+        <section id="view-explore" class="space-y-6 flex-1 flex flex-col">
+            <!-- Personalized Traveler Match Bar -->
+            <div id="personalized-banner" class="bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-900 border border-amberGold-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-amberGold-500/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amberGold-500/10 border border-amberGold-500/30 flex items-center justify-center text-amberGold-400">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 text-xs font-mono text-amberGold-400">
+                            <span>WELCOME BACK, <strong id="banner-username" class="font-bold uppercase tracking-wider">PURVAJ</strong></span>
+                            <span class="text-slate-600">•</span>
+                            <span id="banner-user-title" class="text-slate-400 hidden md:inline">Astro-Backpacker & High Solitude Seeker</span>
+                        </div>
+                        <div class="text-sm font-cinzel text-slate-200 font-bold" id="banner-match-summary">
+                            Found 4 sanctuaries with 90%+ match to your solitude and dark sky preferences.
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="applyCategoryFilter('Recommended')" class="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg bg-amberGold-500/20 hover:bg-amberGold-500/30 border border-amberGold-500/40 text-amberGold-400 font-mono text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+                        <i data-lucide="star" class="w-3.5 h-3.5"></i>
+                        View My Matches
+                    </button>
+                    <button onclick="openProfileModal()" class="px-2.5 py-1.5 rounded-lg bg-obsidian-950 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono" title="Tune Traveler Preferences">
+                        <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Platform Metrics Banner -->
+            <div class="relative rounded-2xl overflow-hidden border border-slate-800 bg-gradient-to-br from-obsidian-900 via-obsidian-850 to-obsidian-900 p-6 sm:p-7 shadow-2xl">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div class="max-w-2xl space-y-2">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amberGold-500/10 border border-amberGold-500/25 text-amberGold-400 text-xs font-mono">
+                            <span class="w-2 h-2 rounded-full bg-amberGold-400 animate-ping"></span>
+                            BEYOND THE TOURIST TRAILS
+                        </div>
+                        <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-slate-100 leading-tight">
+                            Explore Untamed Solitude, <br class="hidden sm:block"/>Preserve the Sacred Silence.
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                            A curated network of unlisted havens. Filter by decibel levels, solve ancient lore riddles to reveal coordinates, and discover hidden sanctuaries personalized to your spirit.
+                        </p>
+                    </div>
+
+                    <!-- Live Metrics Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div class="bg-obsidian-950/70 border border-slate-800/80 rounded-xl p-3 text-center">
+                            <div class="text-xl font-cinzel font-bold text-amberGold-400" id="stat-sanctuaries">12</div>
+                            <div class="text-[10px] font-mono text-slate-400 uppercase">Sanctuaries</div>
+                        </div>
+                        <div class="bg-obsidian-950/70 border border-slate-800/80 rounded-xl p-3 text-center">
+                            <div class="text-xl font-cinzel font-bold text-emeraldGlow-400" id="stat-solitude">92%</div>
+                            <div class="text-[10px] font-mono text-slate-400 uppercase">Avg Solitude</div>
+                        </div>
+                        <div class="bg-obsidian-950/70 border border-slate-800/80 rounded-xl p-3 text-center">
+                            <div class="text-xl font-cinzel font-bold text-sky-400" id="stat-decibel">18 dB</div>
+                            <div class="text-[10px] font-mono text-slate-400 uppercase">Avg Decibel</div>
+                        </div>
+                        <div class="bg-obsidian-950/70 border border-slate-800/80 rounded-xl p-3 text-center">
+                            <div class="text-xl font-cinzel font-bold text-purple-400" id="stat-saved">3</div>
+                            <div class="text-[10px] font-mono text-slate-400 uppercase">In Your Journey</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Search Controls Bar -->
+            <div class="bg-obsidian-900/80 border border-slate-800 rounded-xl p-4 space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <!-- Search Input -->
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input id="search-input" type="text" placeholder="Search by name, region, country, or ancient lore..."
+                               class="w-full pl-10 pr-4 py-2.5 bg-obsidian-950 border border-slate-700/80 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amberGold-500/60 transition-colors">
+                    </div>
+
+                    <!-- Solitude Threshold Slider -->
+                    <div class="flex items-center gap-3 bg-obsidian-950 px-4 py-2 rounded-lg border border-slate-800">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emeraldGlow-400"></i>
+                        <div class="flex flex-col">
+                            <div class="flex justify-between text-xs font-mono text-slate-300">
+                                <span>Min Solitude:</span>
+                                <span id="solitude-val" class="text-emeraldGlow-400 font-bold ml-2">70%</span>
+                            </div>
+                            <input id="solitude-slider" type="range" min="0" max="95" value="70" step="5"
+                                   class="w-32 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emeraldGlow-400">
+                        </div>
+                    </div>
+
+                    <!-- Map vs Cards Toggle -->
+                    <div class="flex items-center bg-obsidian-950 p-1 rounded-lg border border-slate-800 text-xs font-mono">
+                        <button id="toggle-split" onclick="setDisplayMode('split')" class="px-3 py-1.5 rounded-md font-medium text-amberGold-400 bg-obsidian-850">Split</button>
+                        <button id="toggle-map" onclick="setDisplayMode('map')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200">Map</button>
+                        <button id="toggle-grid" onclick="setDisplayMode('grid')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200">Directory</button>
+                    </div>
+                </div>
+
+                <!-- Category Filters (Includes Personalized "Recommended" Tab) -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="category-filters">
+                    <button class="cat-pill active px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all" data-category="All">All Categories</button>
+                    <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all text-amberGold-400 flex items-center gap-1.5" data-category="Recommended">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        Matches For You
+                    </button>
+                    <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all" data-category="Forgotten Ruins">Forgotten Ruins</button>
+                    <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all" data-category="Stargazing Sanctuaries">Stargazing</button>
+                    <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all" data-category="Sacred Groves">Sacred Groves</button>
+                    <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all" data-category="Subterranean & Geo">Subterranean & Geo</button>
+                    <button class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-mono tracking-wider transition-all" data-category="Ghost Towns">Ghost Towns</button>
+                </div>
+            </div>
+
+            <!-- Split Map & Directory Display -->
+            <div id="explorer-container" class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-[580px]">
+                
+                <!-- Interactive Topographic Map (Desktop 7 cols) -->
+                <div id="map-wrapper" class="lg:col-span-7 flex flex-col rounded-2xl overflow-hidden border border-slate-800 bg-obsidian-900 shadow-xl relative">
+                    <div class="px-4 py-2.5 bg-obsidian-900/90 border-b border-slate-800 flex items-center justify-between z-10 text-xs font-mono text-slate-400">
+                        <span class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emeraldGlow-400 animate-pulse"></span>
+                            Live Topographic Canvas (Click marker to preview)
+                        </span>
+                        <span id="spots-count-badge">12 sanctuaries mapped</span>
+                    </div>
+                    <!-- Leaflet Map Mount Point -->
+                    <div id="sanctuary-map" class="w-full flex-1 min-h-[420px]"></div>
+                </div>
+
+                <!-- Sanctuaries Directory Grid (Desktop 5 cols) -->
+                <div id="grid-wrapper" class="lg:col-span-5 flex flex-col space-y-4">
+                    <div class="flex items-center justify-between text-xs font-mono text-slate-400">
+                        <span>DISCOVERED LOCATIONS</span>
+                        <span id="sort-label">Ranked by Personal Match</span>
+                    </div>
+                    
+                    <!-- Spots List Container (Scrollable) -->
+                    <div id="spots-list" class="space-y-3.5 overflow-y-auto max-h-[620px] pr-1 scrollbar-thin">
+                        <!-- Dynamic Spot Cards Rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 2: THE COMMONS & EXPEDITION TRIBES ==================== -->
+        <section id="view-commons" class="space-y-8 hidden flex-1">
+            <!-- Header for Commons -->
+            <div class="bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="space-y-2 max-w-2xl">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amberGold-500/10 border border-amberGold-500/25 text-amberGold-400 text-xs font-mono">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            THE COMMONS & EXPEDITION TRIBES
+                        </div>
+                        <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-slate-100">
+                            Travel with Purpose, Not in Crowds.
+                        </h2>
+                        <p class="text-sm text-slate-400">
+                            Connect with verified low-impact backpackers, stargazers, and local guardians. Coordinate small-group zero-trace expeditions or ask locals about current trail hazards.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openPostDiscussionModal()" class="px-4 py-2.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700 text-slate-200 font-bold text-xs tracking-wider uppercase transition-all">
+                            Ask a Question
+                        </button>
+                        <button onclick="openCreateExpeditionModal()" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emeraldGlow-500 hover:bg-emeraldGlow-400 text-obsidian-950 font-bold text-xs tracking-wider uppercase transition-all shadow-lg shadow-emeraldGlow-500/10">
+                            <i data-lucide="compass" class="w-4 h-4"></i>
+                            Assemble a Tribe
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commons Sub-Nav Tabs -->
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-mono">
+                <button onclick="switchCommonsTab('expeditions')" id="tab-btn-expeditions" class="px-4 py-2 rounded-lg bg-obsidian-850 text-amberGold-400 font-bold border border-amberGold-500/30">
+                    Active Expeditions
+                </button>
+                <button onclick="switchCommonsTab('discussions')" id="tab-btn-discussions" class="px-4 py-2 rounded-lg bg-transparent text-slate-400 hover:text-slate-200">
+                    Community Advice & Discussions
+                </button>
+            </div>
+
+            <!-- Tab 1: Active Expeditions -->
+            <div id="commons-tab-expeditions" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Active Expeditions (8 cols) -->
+                <div class="lg:col-span-8 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="font-cinzel text-lg font-bold text-slate-200 flex items-center gap-2">
+                            <i data-lucide="tent" class="w-5 h-5 text-amberGold-400"></i>
+                            Upcoming Offbeat Expeditions
+                        </h3>
+                        <span class="text-xs font-mono text-slate-400">Strict Cap: Max 6 Travelers</span>
+                    </div>
+
+                    <div id="expeditions-list" class="space-y-4">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Live Field Whispers & Notes Feed (4 cols) -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <h3 class="font-cinzel text-lg font-bold text-slate-200 flex items-center gap-2">
+                            <i data-lucide="message-square" class="w-5 h-5 text-sky-400"></i>
+                            Recent Field Notes
+                        </h3>
+                        <span class="text-xs font-mono text-slate-400">Trail Intel</span>
+                    </div>
+
+                    <div id="field-notes-feed" class="space-y-3">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Community Discussions -->
+            <div id="commons-tab-discussions" class="hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="font-cinzel text-lg font-bold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="message-circle" class="w-5 h-5 text-amberGold-400"></i>
+                        Explorer Discussions & Protocol Debates
+                    </h3>
+                    <button onclick="openPostDiscussionModal()" class="px-3 py-1.5 rounded-lg bg-amberGold-500 hover:bg-amberGold-400 text-obsidian-950 text-xs font-mono font-bold">
+                        Start Thread
+                    </button>
+                </div>
+                <div id="discussions-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 3: MY JOURNEY (BOOKMARKS & NOTES) ==================== -->
+        <section id="view-journey" class="space-y-6 hidden flex-1">
+            <div class="bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amberGold-500/10 text-amberGold-400 border border-amberGold-500/20 text-xs font-mono">
+                            PERSONAL EXPEDITION LEDGER
+                        </div>
+                        <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-slate-100">
+                            Saved Sanctuaries & Field Notes
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-400">
+                            Curated travel wishlists, personal packing reminders, and offline coordinates saved to your explorer profile.
+                        </p>
+                    </div>
+                    <div class="bg-obsidian-950 border border-slate-800 rounded-xl px-4 py-3 text-center">
+                        <div class="text-2xl font-cinzel font-bold text-amberGold-400" id="journey-count">0</div>
+                        <div class="text-[10px] font-mono text-slate-400 uppercase">Sanctuaries Saved</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saved Sanctuaries Grid -->
+            <div id="journey-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 4: EXPLORER PASSPORT & STEWARDSHIP ==================== -->
+        <section id="view-passport" class="space-y-8 hidden flex-1">
+            <div class="bg-gradient-to-r from-obsidian-900 via-obsidian-850 to-obsidian-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-amberGold-500/30 to-emeraldGlow-500/20 border border-amberGold-500/40 flex items-center justify-center shadow-xl">
+                        <i data-lucide="shield-check" class="w-12 h-12 text-amberGold-400"></i>
+                    </div>
+                    <div class="space-y-1.5 flex-1 text-center md:text-left">
+                        <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emeraldGlow-500/10 text-emeraldGlow-400 border border-emeraldGlow-500/20 text-xs font-mono">
+                            VERIFIED LOW-IMPACT STEWARD
+                        </div>
+                        <h2 class="font-cinzel text-2xl sm:text-3xl font-bold text-slate-100" id="passport-display-name">Purvaj</h2>
+                        <p class="text-xs sm:text-sm text-amberGold-400 font-mono" id="passport-title">Astro-Backpacker & High Solitude Seeker</p>
+                        <p class="text-xs text-slate-400 max-w-xl" id="passport-bio">Dedicated to charting places with zero light pollution and extreme acoustic tranquility.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="bg-obsidian-950 border border-slate-800 rounded-xl px-4 py-3 text-center">
+                            <div class="font-cinzel text-2xl font-bold text-amberGold-400" id="passport-riddles-solved">0</div>
+                            <div class="text-[10px] font-mono text-slate-400 uppercase">Riddles Solved</div>
+                        </div>
+                        <div class="bg-obsidian-950 border border-slate-800 rounded-xl px-4 py-3 text-center">
+                            <div class="font-cinzel text-2xl font-bold text-emeraldGlow-400" id="passport-notes-posted">0</div>
+                            <div class="text-[10px] font-mono text-slate-400 uppercase">Field Notes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Badges Section -->
+            <div class="space-y-4">
+                <h3 class="font-cinzel text-lg font-bold text-slate-200">Earned Explorer Badges</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-obsidian-900 border border-amberGold-500/30 rounded-xl p-4 flex items-start gap-4">
+                        <div class="p-3 rounded-xl bg-amberGold-500/10 border border-amberGold-500/20 text-amberGold-400">
+                            <i data-lucide="feather" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-200 text-sm">Quiet Nomad</h4>
+                            <p class="text-xs text-slate-400 mt-1">Explored sanctuaries below 20 decibels without disturbing wildlife.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-obsidian-900 border border-emeraldGlow-500/30 rounded-xl p-4 flex items-start gap-4">
+                        <div class="p-3 rounded-xl bg-emeraldGlow-500/10 border border-emeraldGlow-500/20 text-emeraldGlow-400">
+                            <i data-lucide="footprints" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-200 text-sm">Leave No Trace Pledged</h4>
+                            <p class="text-xs text-slate-400 mt-1">Signed the anti-overtourism pledge and pledged zero plastic usage.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-obsidian-900 border border-purple-500/30 rounded-xl p-4 flex items-start gap-4">
+                        <div class="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                            <i data-lucide="key" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-200 text-sm">Lore Cryptographer</h4>
+                            <p class="text-xs text-slate-400 mt-1">Unlocks secret coordinates through historical understanding.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-obsidian-900 border border-sky-500/30 rounded-xl p-4 flex items-start gap-4">
+                        <div class="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400">
+                            <i data-lucide="moon" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-200 text-sm">Dark Sky Sentinel</h4>
+                            <p class="text-xs text-slate-400 mt-1">Camped under certified zero-light-pollution Bortle Class 1 canopies.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unlocked Sanctuaries Vault -->
+            <div class="space-y-4">
+                <h3 class="font-cinzel text-lg font-bold text-slate-200">Your Decrypted Sanctuaries Vault</h3>
+                <div id="unlocked-vault-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==================== MODAL: SPOT DETAIL & RIDDLE QUEST ==================== -->
+    <div id="spot-detail-modal" class="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <!-- Close Button -->
+            <button onclick="closeSpotDetailModal()" class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-obsidian-950/80 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-100 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Hero Image Header -->
+            <div class="relative h-64 sm:h-72 w-full overflow-hidden">
+                <img id="modal-img" src="" alt="Sanctuary" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-obsidian-900 via-obsidian-900/40 to-transparent"></div>
+                
+                <div class="absolute bottom-4 left-6 right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="modal-category" class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-amberGold-500/20 text-amberGold-400 border border-amberGold-500/30">Category</span>
+                            <span id="modal-region" class="text-xs font-mono text-slate-300">Region, Country</span>
+                        </div>
+                        <h2 id="modal-title" class="font-cinzel text-2xl sm:text-3xl font-bold text-white">Sanctuary Name</h2>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Bookmark Heart Button -->
+                        <button id="modal-bookmark-btn" onclick="toggleCurrentSpotBookmark()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-obsidian-950/90 border border-slate-700 hover:border-amberGold-500 text-xs font-mono text-slate-300 transition-colors">
+                            <i id="modal-bookmark-icon" data-lucide="bookmark" class="w-4 h-4"></i>
+                            <span id="modal-bookmark-label">Save</span>
+                        </button>
+                        <!-- Upvote Button -->
+                        <button id="modal-upvote-btn" onclick="upvoteCurrentSpot()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-obsidian-950/90 border border-slate-700 hover:border-amberGold-500 text-xs font-mono text-amberGold-400 transition-colors">
+                            <i data-lucide="heart" class="w-4 h-4"></i>
+                            <span id="modal-upvotes-count">0</span> Echoes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 sm:p-8 space-y-6">
+                <!-- Personal Match Callout in Modal -->
+                <div id="modal-match-box" class="bg-amberGold-500/10 border border-amberGold-500/30 rounded-xl p-3 flex items-center justify-between text-xs font-mono">
+                    <span class="text-amberGold-400 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <strong id="modal-match-percent">95% Match</strong> for your active explorer profile
+                    </span>
+                    <span class="text-slate-400 text-[11px]" id="modal-match-reason">Matches your Stargazing & Solitude vibe</span>
+                </div>
+
+                <!-- Metrics Badges -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-obsidian-950 border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Solitude Score</div>
+                        <div id="modal-solitude" class="font-cinzel text-xl font-bold text-emeraldGlow-400">95/100</div>
+                    </div>
+                    <div class="bg-obsidian-950 border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Acoustic Calm</div>
+                        <div id="modal-decibel" class="font-cinzel text-xl font-bold text-sky-400">18 dB</div>
+                    </div>
+                    <div class="bg-obsidian-950 border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Cellular Signal</div>
+                        <div id="modal-signal" class="text-xs font-mono font-medium text-amberGold-400 truncate">0 Bars</div>
+                    </div>
+                    <div class="bg-obsidian-950 border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Human Traffic</div>
+                        <div id="modal-traffic" class="text-xs font-mono font-medium text-slate-300 truncate">Rare</div>
+                    </div>
+                </div>
+
+                <!-- Lore & Narrative -->
+                <div class="space-y-2">
+                    <h3 class="font-cinzel text-lg font-bold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-4 h-4 text-amberGold-400"></i>
+                        The Lore & History
+                    </h3>
+                    <p id="modal-lore" class="text-sm text-slate-300 leading-relaxed bg-obsidian-950/60 p-4 rounded-xl border border-slate-800/80">
+                        <!-- Spot lore text -->
+                    </p>
+                </div>
+
+                <!-- Protection Box / Coordinates Riddle Quest -->
+                <div id="coordinates-section" class="rounded-xl border p-5 transition-all">
+                    <!-- Rendered dynamically by JS depending on unlocked status -->
+                </div>
+
+                <!-- Personal Notes on this Sanctuary (if bookmarked) -->
+                <div id="modal-personal-note-section" class="bg-obsidian-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between text-xs font-mono">
+                        <span class="text-amberGold-400 flex items-center gap-1.5">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            Your Personal Expedition Note:
+                        </span>
+                        <button onclick="saveModalPersonalNote()" class="text-emeraldGlow-400 hover:text-emeraldGlow-300 text-[11px]">Save Note</button>
+                    </div>
+                    <textarea id="modal-personal-note-input" rows="2" placeholder="e.g. Remember to bring packraft, satellite messenger, and red-light headlamp for astrophotography..." class="w-full bg-obsidian-900 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amberGold-500"></textarea>
+                </div>
+
+                <!-- Guardian & Leave No Trace -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-obsidian-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex items-center gap-2 text-xs font-mono text-amberGold-400">
+                            <i data-lucide="shield" class="w-4 h-4"></i>
+                            LOCAL SANCTUARY GUARDIAN
+                        </div>
+                        <div id="modal-guardian-name" class="font-semibold text-slate-200 text-sm">Guardian Name</div>
+                        <div id="modal-guardian-title" class="text-xs text-slate-400">Role / Conservation title</div>
+                    </div>
+
+                    <div class="bg-obsidian-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="flex items-center gap-2 text-xs font-mono text-emeraldGlow-400">
+                            <i data-lucide="leaf" class="w-4 h-4"></i>
+                            LEAVE NO TRACE PROTOCOL
+                        </div>
+                        <p id="modal-lnt" class="text-xs text-slate-300">Guidelines...</p>
+                    </div>
+                </div>
+
+                <!-- Community Field Notes -->
+                <div class="space-y-4 pt-2 border-t border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-cinzel text-lg font-bold text-slate-200 flex items-center gap-2">
+                            <i data-lucide="message-square" class="w-4 h-4 text-sky-400"></i>
+                            Trail Whispers & Field Notes
+                        </h3>
+                        <span class="text-xs font-mono text-slate-400" id="modal-notes-count">0 Notes</span>
+                    </div>
+
+                    <!-- Notes List -->
+                    <div id="modal-notes-list" class="space-y-3">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <!-- Add Note Form -->
+                    <div class="bg-obsidian-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                        <div class="text-xs font-mono text-slate-300 font-semibold">Post a Field Note / Hazard Alert:</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input id="note-author" type="text" placeholder="Your Name" class="bg-obsidian-900 border border-slate-700 px-3 py-2 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amberGold-500">
+                            <select id="note-badge" class="bg-obsidian-900 border border-slate-700 px-3 py-2 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amberGold-500">
+                                <option value="Astro-Backpacker">Astro-Backpacker</option>
+                                <option value="Pathfinder">Pathfinder</option>
+                                <option value="Local Guardian">Local Guardian</option>
+                                <option value="Dark Sky Sentinel">Dark Sky Sentinel</option>
+                                <option value="Trail Ethicist">Trail Ethicist</option>
+                            </select>
+                            <select id="note-type" class="bg-obsidian-900 border border-slate-700 px-3 py-2 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amberGold-500">
+                                <option value="Trail Alert">Trail Alert</option>
+                                <option value="Water Source">Water Source</option>
+                                <option value="Local Lore">Local Lore</option>
+                                <option value="Camping Advice">Camping Advice</option>
+                                <option value="Etiquette">Etiquette</option>
+                            </select>
+                        </div>
+                        <textarea id="note-content" rows="2" placeholder="Describe the water depth, scree conditions, or respect notes..." class="w-full bg-obsidian-900 border border-slate-700 p-3 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amberGold-500"></textarea>
+                        <button onclick="submitFieldNote()" class="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-obsidian-950 font-bold text-xs tracking-wider uppercase transition-colors">
+                            Submit Field Whisper
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: PROFILE & PREFERENCE CUSTOMIZER ==================== -->
+    <div id="profile-modal" class="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeProfileModal()" class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-obsidian-950 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="space-y-1">
+                <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amberGold-500/10 text-amberGold-400 border border-amberGold-500/20 text-xs font-mono">
+                    EXPLORER IDENTITY
+                </div>
+                <h2 class="font-cinzel text-2xl font-bold text-slate-100">Personalize Your Profile</h2>
+                <p class="text-xs text-slate-400">Tune your travel vibe to unlock personalized sanctuary recommendations.</p>
+            </div>
+
+            <form id="profile-form" onsubmit="handleProfileSave(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Explorer Name *</label>
+                        <input id="prof-name" required type="text" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Traveler Title / Calling *</label>
+                        <input id="prof-title" required type="text" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Bio & Travel Philosophy</label>
+                    <textarea id="prof-bio" rows="2" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Favorite Terrains & Sanctuaries</label>
+                    <input id="prof-categories" type="text" placeholder="e.g. Stargazing Sanctuaries, Forgotten Ruins" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    <span class="text-[10px] font-mono text-slate-500">Comma-separated: Forgotten Ruins, Stargazing Sanctuaries, Sacred Groves, Subterranean & Geo, Ghost Towns</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div class="space-y-1 bg-obsidian-950 p-3 rounded-lg border border-slate-800">
+                        <label class="text-xs font-mono text-slate-300 flex justify-between">
+                            <span>Preferred Solitude:</span>
+                            <span id="prof-sol-val" class="text-emeraldGlow-400 font-bold">85%</span>
+                        </label>
+                        <input id="prof-solitude" type="range" min="50" max="95" step="5" class="w-full accent-emeraldGlow-400 cursor-pointer">
+                    </div>
+
+                    <div class="space-y-1 bg-obsidian-950 p-3 rounded-lg border border-slate-800">
+                        <label class="text-xs font-mono text-slate-300 flex justify-between">
+                            <span>Max Acoustic Decibel:</span>
+                            <span id="prof-dec-val" class="text-sky-400 font-bold">20 dB</span>
+                        </label>
+                        <input id="prof-decibel" type="range" min="10" max="40" step="1" class="w-full accent-sky-400 cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-lg bg-obsidian-950 border border-slate-700 text-xs font-mono text-slate-400 hover:text-slate-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-amberGold-500 hover:bg-amberGold-400 text-obsidian-950 font-bold text-xs tracking-wider uppercase transition-colors">
+                        Save Identity
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: POST COMMUNITY DISCUSSION ==================== -->
+    <div id="discussion-modal" class="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closePostDiscussionModal()" class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-obsidian-950 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="space-y-1">
+                <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 text-xs font-mono">
+                    COMMUNITY COMMONS
+                </div>
+                <h2 class="font-cinzel text-2xl font-bold text-slate-100">Ask the Guardian Network</h2>
+                <p class="text-xs text-slate-400">Post a question about trail safety, leave-no-trace ethics, or gear advice.</p>
+            </div>
+
+            <form id="discussion-form" onsubmit="handleDiscussionSubmit(event)" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Question / Topic Title *</label>
+                    <input id="disc-title" required type="text" placeholder="e.g. What is the current water level at Mavrovo submerged nave?" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Category *</label>
+                    <select id="disc-category" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                        <option value="Trail Hazards & Access">Trail Hazards & Access</option>
+                        <option value="Ethical Travel & Etiquette">Ethical Travel & Etiquette</option>
+                        <option value="Gear & Zero-Trace Systems">Gear & Zero-Trace Systems</option>
+                        <option value="Local Lore & History">Local Lore & History</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Detailed Question *</label>
+                    <textarea id="disc-content" required rows="3" placeholder="Provide context, intended travel dates, or gear specifics..." class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closePostDiscussionModal()" class="px-4 py-2 rounded-lg bg-obsidian-950 border border-slate-700 text-xs font-mono text-slate-400 hover:text-slate-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-obsidian-950 font-bold text-xs tracking-wider uppercase transition-colors">
+                        Post to Commons
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: SUBMIT A SANCTUARY ==================== -->
+    <div id="submit-spot-modal" class="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeSubmitModal()" class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-obsidian-950 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="space-y-1">
+                <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amberGold-500/10 text-amberGold-400 border border-amberGold-500/20 text-xs font-mono">
+                    ETHICAL CROWDSOURCING
+                </div>
+                <h2 class="font-cinzel text-2xl font-bold text-slate-100">Record an Unlisted Sanctuary</h2>
+                <p class="text-xs text-slate-400">Every submission is reviewed under Leave-No-Trace criteria to prevent over-tourism.</p>
+            </div>
+
+            <form id="submit-spot-form" onsubmit="handleSpotSubmit(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Sanctuary Name *</label>
+                        <input id="sub-name" required type="text" placeholder="e.g. The Whispering Hermitage" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Category *</label>
+                        <select id="sub-category" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                            <option value="Forgotten Ruins">Forgotten Ruins</option>
+                            <option value="Stargazing Sanctuaries">Stargazing Sanctuaries</option>
+                            <option value="Sacred Groves">Sacred Groves</option>
+                            <option value="Subterranean & Geo">Subterranean & Geo</option>
+                            <option value="Ghost Towns">Ghost Towns</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Region / Valley *</label>
+                        <input id="sub-region" required type="text" placeholder="e.g. High Atlas Mountains" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Country *</label>
+                        <input id="sub-country" required type="text" placeholder="e.g. Morocco" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Poetic Tagline</label>
+                    <input id="sub-tagline" type="text" placeholder="A single phrase describing its spirit and tranquility" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Latitude</label>
+                        <input id="sub-lat" type="number" step="any" placeholder="e.g. 31.2541" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Longitude</label>
+                        <input id="sub-lng" type="number" step="any" placeholder="e.g. -7.9821" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Solitude Score (1-100)</label>
+                        <input id="sub-solitude" type="number" min="1" max="100" value="90" class="w-full bg-obsidian-950 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Decibel Level (dB)</label>
+                        <input id="sub-decibel" type="number" min="5" max="60" value="18" class="w-full bg-obsidian-950 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Cellular Reach</label>
+                        <select id="sub-signal" class="w-full bg-obsidian-950 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                            <option value="0 Bars - Pure Blackout">0 Bars - Pure Blackout</option>
+                            <option value="1 Bar Emergency Only">1 Bar Emergency Only</option>
+                            <option value="Spotty 3G on High Ridges">Spotty 3G on High Ridges</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Lore & Cultural Story *</label>
+                    <textarea id="sub-lore" required rows="3" placeholder="Tell the legend, how it was discovered, why it is tranquil..." class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Leave-No-Trace Specifics *</label>
+                    <input id="sub-lnt" required type="text" placeholder="e.g. Do not light campfires near ancient cedar roots; pack out all bio-waste." class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                </div>
+
+                <!-- Riddle Protection Checkbox -->
+                <div class="bg-obsidian-950 p-4 rounded-xl border border-amberGold-500/20 space-y-3">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input id="sub-protect" type="checkbox" onchange="toggleRiddleInputs()" class="w-4 h-4 rounded text-amberGold-500 focus:ring-0">
+                        <span class="text-xs font-bold text-amberGold-400">Lock Coordinates Behind a Lore Riddle (Protects from Overtourism)</span>
+                    </label>
+
+                    <div id="riddle-fields" class="space-y-3 hidden">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-mono text-slate-400">Riddle Question</label>
+                            <input id="sub-riddle-q" type="text" placeholder="e.g. What sacred tree provides shade at the pass?" class="w-full bg-obsidian-900 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-mono text-slate-400">Answer Keyword</label>
+                                <input id="sub-riddle-a" type="text" placeholder="e.g. cedar" class="w-full bg-obsidian-900 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-mono text-slate-400">Guardian Hint</label>
+                                <input id="sub-riddle-h" type="text" placeholder="e.g. An aromatic evergreen mentioned in ancient epics." class="w-full bg-obsidian-900 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-amberGold-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeSubmitModal()" class="px-4 py-2 rounded-lg bg-obsidian-950 border border-slate-700 text-xs font-mono text-slate-400 hover:text-slate-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-amberGold-500 hover:bg-amberGold-400 text-obsidian-950 font-bold text-xs tracking-wider uppercase transition-colors">
+                        Submit for Guardian Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: ASSEMBLE A TRIBE EXPEDITION ==================== -->
+    <div id="create-expedition-modal" class="fixed inset-0 z-50 bg-obsidian-950/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-obsidian-900 border border-slate-800 rounded-2xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeCreateExpeditionModal()" class="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-obsidian-950 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="space-y-1">
+                <div class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emeraldGlow-500/10 text-emeraldGlow-400 border border-emeraldGlow-500/20 text-xs font-mono">
+                    LOW-IMPACT TRAVEL COMPANIONS
+                </div>
+                <h2 class="font-cinzel text-2xl font-bold text-slate-100">Assemble an Expedition Tribe</h2>
+                <p class="text-xs text-slate-400">Post an upcoming journey to assemble fellow respectful explorers.</p>
+            </div>
+
+            <form id="create-expedition-form" onsubmit="handleExpeditionSubmit(event)" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Expedition Name *</label>
+                    <input id="exp-title" required type="text" placeholder="e.g. Solstice Stargazing & Petroglyph Watch" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emeraldGlow-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Destination *</label>
+                        <input id="exp-dest" required type="text" placeholder="e.g. Askja Caldera" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emeraldGlow-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Date of Departure *</label>
+                        <input id="exp-date" required type="date" class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emeraldGlow-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Organizer Name *</label>
+                        <input id="exp-organizer" required type="text" class="w-full bg-obsidian-950 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-emeraldGlow-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Skill Level</label>
+                        <select id="exp-skill" class="w-full bg-obsidian-950 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-emeraldGlow-500 focus:outline-none">
+                            <option value="Beginner Friendly">Beginner Friendly</option>
+                            <option value="Moderate Hiker">Moderate Hiker</option>
+                            <option value="Rugged Backpacker">Rugged Backpacker</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Max Group Cap</label>
+                        <input id="exp-max" type="number" min="2" max="6" value="5" class="w-full bg-obsidian-950 border border-slate-700 p-2 rounded-lg text-xs text-slate-200 focus:border-emeraldGlow-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Expedition Plan & Carpool Details *</label>
+                    <textarea id="exp-desc" required rows="3" placeholder="Explain the rendezvous point, gear needed (e.g. water filters, 4x4 clearance), and commitment to zero trace..." class="w-full bg-obsidian-950 border border-slate-700 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emeraldGlow-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeCreateExpeditionModal()" class="px-4 py-2 rounded-lg bg-obsidian-950 border border-slate-700 text-xs font-mono text-slate-400 hover:text-slate-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-emeraldGlow-500 hover:bg-emeraldGlow-400 text-obsidian-950 font-bold text-xs tracking-wider uppercase transition-colors">
+                        Post to Commons
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast Element -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-xl bg-obsidian-900 border border-amberGold-500/40 text-slate-100 shadow-2xl font-mono text-xs max-w-sm pointer-events-none">
+        <i id="toast-icon" data-lucide="info" class="w-4 h-4 text-amberGold-400 shrink-0"></i>
+        <span id="toast-msg">Notification</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-obsidian-900/60 py-6 px-4 text-center text-xs font-mono text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="compass" class="w-4 h-4 text-amberGold-400"></i>
+                <span class="text-slate-400 font-cinzel font-bold">WANDERLORE</span>
+                <span>— Custodians of Hidden Solitude.</span>
+            </div>
+            <div>
+                Crafted for explorers who seek silence, culture, and low-impact discovery.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript Application -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

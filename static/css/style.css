@@ -1,0 +1,187 @@
+/* ======================================================
+   WANDERLORE - Stylesheet & Cartographic Dark Aesthetics
+   ====================================================== */
+
+/* Custom Scrollbars */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #0b0f17;
+    border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Nav Button Active State */
+.nav-btn {
+    color: #94a3b8;
+    background: transparent;
+}
+.nav-btn:hover {
+    color: #f8fafc;
+    background: #111726;
+}
+.nav-btn.active {
+    color: #fbbf24;
+    background: #172033;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.08);
+}
+
+/* Category Filter Pills */
+.cat-pill {
+    background: #0b0f17;
+    color: #94a3b8;
+    border: 1px solid #1e293b;
+    white-space: nowrap;
+}
+.cat-pill:hover {
+    border-color: #334155;
+    color: #e2e8f0;
+}
+.cat-pill.active {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.1);
+}
+
+/* Leaflet Customization for Dark Cartography */
+.leaflet-container {
+    background: #070a10 !important;
+    font-family: 'Space Mono', monospace !important;
+}
+
+.leaflet-control-zoom a {
+    background-color: #0b0f17 !important;
+    color: #cbd5e1 !important;
+    border-color: #1e293b !important;
+}
+.leaflet-control-zoom a:hover {
+    background-color: #172033 !important;
+    color: #fbbf24 !important;
+}
+
+.leaflet-popup-content-wrapper {
+    background: #0b0f17 !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #334155 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
+    padding: 0 !important;
+}
+
+.leaflet-popup-content {
+    margin: 12px 14px !important;
+    line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+    background: #0b0f17 !important;
+    border: 1px solid #334155 !important;
+}
+
+/* Custom Pulsing Leaflet Markers */
+.custom-sanctuary-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pin-beacon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.pin-beacon:hover {
+    transform: scale(1.25);
+}
+
+.pin-beacon .pin-core {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px #f59e0b;
+    z-index: 2;
+}
+
+.pin-beacon .pin-pulse {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.4);
+    animation: pin-pulse-anim 2s infinite ease-out;
+    z-index: 1;
+}
+
+.pin-beacon.protected .pin-core {
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+}
+.pin-beacon.protected .pin-pulse {
+    background: rgba(16, 185, 129, 0.4);
+}
+
+@keyframes pin-pulse-anim {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+/* Card hover glow */
+.spot-card {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.spot-card:hover {
+    border-color: rgba(245, 158, 11, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.6);
+}
+
+/* Match Percentage Glowing Tag */
+.match-tag {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(16, 185, 129, 0.2));
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+}
+
+/* Toast animations */
+.toast-visible {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+}
+
+/* Bookmark Active Color */
+.bookmark-active {
+    color: #f59e0b !important;
+    fill: #f59e0b !important;
+}
