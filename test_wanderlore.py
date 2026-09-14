@@ -1,12 +1,15 @@
+import os
+import importlib
 import unittest
 import json
 from app import app
+import database
 from database import init_db
 
 class WanderLoreTests(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
-        init_db()
+        init_db(force_reseed=True)
 
     def test_01_index_page(self):
         response = self.client.get('/')
@@ -124,6 +127,23 @@ class WanderLoreTests(unittest.TestCase):
         stats = json.loads(stats_res.data)
         self.assertGreaterEqual(stats['total_sanctuaries'], 12)
         self.assertGreaterEqual(stats['saved_journeys'], 1)
+
+    def test_09_vercel_sqlite_path_uses_temp_dir(self):
+        original_vercel = os.environ.get('VERCEL')
+        original_db_path = getattr(database, 'DB_PATH', None)
+        try:
+            os.environ['VERCEL'] = '1'
+            importlib.reload(database)
+            self.assertIn('tmp', database.DB_PATH.lower())
+            self.assertTrue(os.path.exists(os.path.dirname(database.DB_PATH)))
+        finally:
+            if original_vercel is None:
+                os.environ.pop('VERCEL', None)
+            else:
+                os.environ['VERCEL'] = original_vercel
+            if original_db_path is not None:
+                database.DB_PATH = original_db_path
+            importlib.reload(database)
 
 if __name__ == '__main__':
     unittest.main()

@@ -3,7 +3,16 @@ import os
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "wanderlore.db")
+
+def get_db_path():
+    if os.environ.get("VERCEL") == "1":
+        base_dir = "/tmp"
+        os.makedirs(base_dir, exist_ok=True)
+        return os.path.join(base_dir, "wanderlore.db")
+    return os.path.join(os.path.dirname(__file__), "wanderlore.db")
+
+
+DB_PATH = get_db_path()
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
