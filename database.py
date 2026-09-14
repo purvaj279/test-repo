@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "wanderlore.db")
 
@@ -14,6 +15,11 @@ def init_db(force_reseed=False):
     cursor = conn.cursor()
 
     if force_reseed:
+        cursor.execute("DROP TABLE IF EXISTS trip_waypoints")
+        cursor.execute("DROP TABLE IF EXISTS trips")
+        cursor.execute("DROP TABLE IF EXISTS reservations")
+        cursor.execute("DROP TABLE IF EXISTS contact_submissions")
+        cursor.execute("DROP TABLE IF EXISTS users")
         cursor.execute("DROP TABLE IF EXISTS spots")
         cursor.execute("DROP TABLE IF EXISTS field_notes")
         cursor.execute("DROP TABLE IF EXISTS expeditions")
@@ -21,6 +27,93 @@ def init_db(force_reseed=False):
         cursor.execute("DROP TABLE IF EXISTS user_bookmarks")
         cursor.execute("DROP TABLE IF EXISTS community_discussions")
 
+    # 1. Users Table with Secure Password Hashing and Reset Tokens
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        display_name TEXT NOT NULL,
+        avatar_url TEXT DEFAULT '',
+        title TEXT DEFAULT 'Wanderer',
+        bio TEXT DEFAULT '',
+        role TEXT DEFAULT 'explorer',
+        reset_token TEXT DEFAULT NULL,
+        reset_token_expiry TEXT DEFAULT NULL,
+        created_at TEXT NOT NULL
+    )
+    """)
+
+    # 2. Trips / Itineraries Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS trips (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        destination TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        budget REAL DEFAULT 0.0,
+        status TEXT DEFAULT 'Upcoming',
+        notes TEXT DEFAULT '',
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    )
+    """)
+
+    # 3. Trip Waypoints Table (with latitude, longitude, and day sequence)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS trip_waypoints (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        trip_id INTEGER NOT NULL,
+        spot_id INTEGER DEFAULT NULL,
+        title TEXT NOT NULL,
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        day_number INTEGER DEFAULT 1,
+        order_index INTEGER DEFAULT 0,
+        notes TEXT DEFAULT '',
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE,
+        FOREIGN KEY (spot_id) REFERENCES spots (id) ON DELETE SET NULL
+    )
+    """)
+
+    # 4. Reservations / Bookings Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS reservations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        spot_id INTEGER DEFAULT NULL,
+        expedition_id INTEGER DEFAULT NULL,
+        booking_reference TEXT UNIQUE NOT NULL,
+        booking_type TEXT NOT NULL,
+        travel_date TEXT NOT NULL,
+        party_size INTEGER NOT NULL,
+        total_amount REAL DEFAULT 0.0,
+        status TEXT DEFAULT 'Confirmed',
+        special_requests TEXT DEFAULT '',
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (spot_id) REFERENCES spots (id) ON DELETE SET NULL,
+        FOREIGN KEY (expedition_id) REFERENCES expeditions (id) ON DELETE SET NULL
+    )
+    """)
+
+    # 5. Contact & Concierge Submissions Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS contact_submissions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT DEFAULT 'New',
+        created_at TEXT NOT NULL
+    )
+    """)
+
+    # 6. Sanctuaries / Spots Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS spots (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,10 +141,12 @@ def init_db(force_reseed=False):
         is_protected INTEGER DEFAULT 0,
         soundscape_type TEXT DEFAULT 'forest_wind',
         upvotes INTEGER DEFAULT 0,
+        permit_price REAL DEFAULT 15.0,
         created_at TEXT NOT NULL
     )
     """)
 
+    # 7. Field Notes Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS field_notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,6 +161,7 @@ def init_db(force_reseed=False):
     )
     """)
 
+    # 8. Expeditions Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS expeditions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,6 +179,7 @@ def init_db(force_reseed=False):
     )
     """)
 
+    # 9. User Profiles (Personalization state)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_profiles (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,6 +197,7 @@ def init_db(force_reseed=False):
     )
     """)
 
+    # 10. Bookmarks Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_bookmarks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -112,6 +210,7 @@ def init_db(force_reseed=False):
     )
     """)
 
+    # 11. Discussions Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS community_discussions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,6 +234,47 @@ def init_db(force_reseed=False):
 
 def seed_data(cursor):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Seed Default Production Users
+    demo_password_hash = generate_password_hash("password123")
+
+    users_data = [
+        (
+            "purvaj@wanderlore.com",
+            demo_password_hash,
+            "Purvaj",
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+            "Astro-Backpacker & High Solitude Seeker",
+            "Dedicated to charting sanctuaries with zero light pollution, extreme acoustic tranquility, and respectful zero-trace ethics.",
+            "explorer",
+            now
+        ),
+        (
+            "maya@wanderlore.com",
+            demo_password_hash,
+            "Maya Lin",
+            "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80",
+            "Botanical Custodian & Ethno-Botanist",
+            "Researches living root architecture and indigenous forest protocols across monsoon valleys.",
+            "guardian",
+            now
+        ),
+        (
+            "kenji@wanderlore.com",
+            demo_password_hash,
+            "Kenji Sato",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+            "Subterranean Geologist",
+            "Exploring basalt acoustic canyon resonance, volcanic calderas, and abandoned stone settlements.",
+            "explorer",
+            now
+        )
+    ]
+
+    cursor.executemany("""
+    INSERT INTO users (email, password_hash, display_name, avatar_url, title, bio, role, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, users_data)
 
     # 12 Deeply Curated Offbeat Sanctuaries
     spots_data = [
@@ -163,6 +303,7 @@ def seed_data(cursor):
             1,
             "water_gentle",
             142,
+            12.0,
             now
         ),
         (
@@ -190,6 +331,7 @@ def seed_data(cursor):
             0,
             "canyon_wind",
             189,
+            18.0,
             now
         ),
         (
@@ -217,6 +359,7 @@ def seed_data(cursor):
             1,
             "night_crickets",
             215,
+            15.0,
             now
         ),
         (
@@ -244,6 +387,7 @@ def seed_data(cursor):
             1,
             "jungle_stream",
             310,
+            10.0,
             now
         ),
         (
@@ -271,6 +415,7 @@ def seed_data(cursor):
             0,
             "canyon_wind",
             174,
+            14.0,
             now
         ),
         (
@@ -298,6 +443,7 @@ def seed_data(cursor):
             1,
             "mountain_breeze",
             254,
+            25.0,
             now
         ),
         (
@@ -325,6 +471,7 @@ def seed_data(cursor):
             0,
             "water_gentle",
             198,
+            10.0,
             now
         ),
         (
@@ -352,6 +499,7 @@ def seed_data(cursor):
             1,
             "jungle_stream",
             283,
+            20.0,
             now
         ),
         (
@@ -379,6 +527,7 @@ def seed_data(cursor):
             1,
             "canyon_wind",
             167,
+            15.0,
             now
         ),
         (
@@ -406,6 +555,7 @@ def seed_data(cursor):
             0,
             "forest_wind",
             230,
+            8.0,
             now
         ),
         (
@@ -433,6 +583,7 @@ def seed_data(cursor):
             1,
             "water_gentle",
             176,
+            12.0,
             now
         ),
         (
@@ -460,6 +611,7 @@ def seed_data(cursor):
             1,
             "water_gentle",
             268,
+            22.0,
             now
         )
     ]
@@ -469,11 +621,103 @@ def seed_data(cursor):
         name, tagline, region, country, category, latitude, longitude, image_url, lore,
         solitude_score, decibel_level, crowd_factor, cell_signal, difficulty, best_season,
         leave_no_trace_notes, guardian_name, guardian_title, riddle_question, riddle_answer,
-        riddle_hint, is_protected, soundscape_type, upvotes, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        riddle_hint, is_protected, soundscape_type, upvotes, permit_price, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, spots_data)
 
-    # Community Field Notes
+    # Seed Sample Itineraries & Waypoints for Purvaj (user_id = 1)
+    trips_data = [
+        (
+            1,
+            "Solstice Stargazing & Desert Silence",
+            "Colorado Desert, California",
+            "2026-11-14",
+            "2026-11-17",
+            450.0,
+            "Upcoming",
+            "Four-day off-grid desert crossing with high-clearance 4x4. Focus on Bortle 1 night photography and ancient petroglyphs.",
+            now
+        ),
+        (
+            1,
+            "Nordic Basalt & Volcanic Acoustics",
+            "Highlands of Iceland",
+            "2027-07-10",
+            "2027-07-16",
+            1200.0,
+            "Draft",
+            "Packrafting alpine glacial lakes and testing acoustic echoes across Hljodaklettar honeycomb canyons.",
+            now
+        )
+    ]
+
+    cursor.executemany("""
+    INSERT INTO trips (user_id, title, destination, start_date, end_date, budget, status, notes, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, trips_data)
+
+    # Seed Waypoints for Trip 1 (Desert Solitude)
+    waypoints_data = [
+        (1, 3, "Trailhead & Tire Deflation Station", 33.2650, -116.3920, 1, 1, "Lower tires to 20 PSI before entering sandy washboard ruts.", now),
+        (1, 3, "The Starlit Petroglyphs Canyon", 33.2560, -116.3752, 1, 2, "Main canyon camp. Pitch bivy behind the monolith to block northern gusts.", now),
+        (1, None, "Font's Point Solitude Overlook", 33.3032, -116.2341, 2, 1, "Epic golden hour panorama over desolate badlands labyrinth.", now),
+        (1, None, "Fish Creek Wash Camp", 33.0039, -116.1022, 3, 1, "Sheltered slot canyon camp with zero artificial ambient light.", now)
+    ]
+
+    cursor.executemany("""
+    INSERT INTO trip_waypoints (trip_id, spot_id, title, latitude, longitude, day_number, order_index, notes, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, waypoints_data)
+
+    # Seed Sample Reservations / Bookings for Purvaj
+    reservations_data = [
+        (
+            1,
+            3,
+            None,
+            "WL-2026-8941",
+            "Dark Sky Conservation Eco-Permit",
+            "2026-11-15",
+            2,
+            30.0,
+            "Confirmed",
+            "Bringing red-light astronomy headlamps only to protect nocturnal owl habitats.",
+            now
+        ),
+        (
+            1,
+            1,
+            None,
+            "WL-2026-3392",
+            "Alpine Lake Low-Impact Packraft Permit",
+            "2026-09-28",
+            2,
+            24.0,
+            "Confirmed",
+            "Renting dry-suits from local guardian Goran Jovanovski in Mavrovo village.",
+            now
+        )
+    ]
+
+    cursor.executemany("""
+    INSERT INTO reservations (
+        user_id, spot_id, expedition_id, booking_reference, booking_type,
+        travel_date, party_size, total_amount, status, special_requests, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, reservations_data)
+
+    # Seed Sample Contact Submissions
+    contact_data = [
+        ("Sarah Jenkins", "sarah.j@gmail.com", "Permit availability for Mavrovo kayak expedition", "Hello, we are two respectful kayakers visiting in October. Do we need advance permits to land on the gravel spit near the sunken bell tower?", "Responded", now),
+        ("Liam O'Connor", "liam.oc@wilderness.ie", "Volunteering as a Local Guardian for Kerry Dark Sky Reserve", "Would love to list our community-monitored dark sky sanctuary in southwest Ireland on WanderLore.", "New", now)
+    ]
+
+    cursor.executemany("""
+    INSERT INTO contact_submissions (name, email, subject, message, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+    """, contact_data)
+
+    # Seed Field Notes
     field_notes_data = [
         (1, "Elena V.", "Pathfinder", "Trail Alert", "Bridge over the west stream was washed out during May snowmelt. Use the shallow gravel ford 200m upstream. Water is knee-deep and frigid.", 28, "2026-08-14 11:20:00"),
         (1, "Goran J.", "Local Guardian", "Etiquette", "Please respect the old stone masonry. The mortar is made from lime and straw dating back to 1850; do not wedge tent stakes between stones.", 45, "2026-08-20 09:15:00"),
@@ -492,7 +736,7 @@ def seed_data(cursor):
     ) VALUES (?, ?, ?, ?, ?, ?, ?)
     """, field_notes_data)
 
-    # Expeditions
+    # Seed Expeditions
     expeditions_data = [
         (
             "New Moon Solitude & Orionids Meteor Watch",
@@ -555,7 +799,7 @@ def seed_data(cursor):
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, expeditions_data)
 
-    # 3 Distinct Explorer Personas (with Purvaj as default)
+    # Seed User Profiles
     profiles_data = [
         (
             "purvaj",
@@ -606,7 +850,7 @@ def seed_data(cursor):
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, profiles_data)
 
-    # Pre-seed bookmarks for Purvaj (Anza-Borrego & Askja)
+    # Seed Bookmarks
     bookmarks_data = [
         ("purvaj", 3, "Plan to bivy behind the western granite wall. Bring 200mm lens for Milky Way solstice alignment.", now),
         ("purvaj", 6, "Check highland pass status with Akureyri rangers before renting high-clearance 4x4.", now),
@@ -618,7 +862,7 @@ def seed_data(cursor):
     VALUES (?, ?, ?, ?)
     """, bookmarks_data)
 
-    # Community Discussions
+    # Seed Discussions
     discussions_data = [
         (
             "How do you calibrate Leave-No-Trace on fragile volcanic pumice?",
@@ -660,4 +904,4 @@ def seed_data(cursor):
 
 if __name__ == "__main__":
     init_db(force_reseed=True)
-    print("WanderLore database successfully initialized with 12 sanctuaries, 3 personas, bookmarks, and discussions!")
+    print("WanderLore production database successfully initialized with users, trips, waypoints, reservations, and contacts!")

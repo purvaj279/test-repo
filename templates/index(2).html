@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WanderLore — Enterprise Travel Intelligence & Quiet Sanctuaries</title>
+    
+    <!-- Modern Geometric Typography (Inter, Plus Jakarta Sans, JetBrains Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN with Enterprise Slate & Electric Cyan Palette -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#162032',
+                            900: '#0F172A',
+                            950: '#0B0F19'
+                        },
+                        sky: {
+                            450: '#1E9FE8',
+                            500: '#0EA5E9',
+                            400: '#38BDF8'
+                        },
+                        emerald: {
+                            400: '#34D399',
+                            500: '#10B981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Space Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Leaflet CSS & JS (Resilient Map Engine) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Enterprise Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-[#0B0F19] text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-sky-500/25 selection:text-sky-300">
+
+    <!-- 1. System Telemetry & Ethos Top Bar -->
+    <div class="bg-[#080C14] border-b border-slate-800/80 py-1.5 px-4 text-xs flex items-center justify-between gap-4 font-mono">
+        <div class="flex items-center gap-2.5 text-[11px] text-slate-400">
+            <span class="inline-flex items-center justify-center w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-slate-300 font-semibold uppercase tracking-wider">Leave-No-Trace Verified</span>
+            <span class="hidden md:inline text-slate-600">|</span>
+            <span class="hidden md:inline text-slate-400">Low-impact quota allocations • Coordinates safeguarded behind cultural riddles</span>
+        </div>
+
+        <!-- Cartography Engine Telemetry & Modal Trigger -->
+        <div class="flex items-center gap-3 text-[11px]">
+            <div id="map-engine-badge" class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                <span id="map-engine-label">CartoDB High-Res Active</span>
+            </div>
+            <button onclick="openGmapsConfigModal()" class="text-slate-400 hover:text-sky-400 transition-colors flex items-center gap-1.5" title="Configure Google Maps API Key">
+                <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Engine Config</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. Enterprise Sticky Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-[#0F172A]/90 backdrop-blur-md border-b border-slate-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <!-- Left: Brand Lockup -->
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="switchView('explore')">
+                    <div class="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:bg-sky-500/20 group-hover:border-sky-500/50 transition-all">
+                        <i data-lucide="compass" class="w-5 h-5 transition-transform duration-500 group-hover:rotate-45"></i>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-display font-bold text-lg tracking-tight text-white">WanderLore</span>
+                        <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-slate-800 text-sky-400 border border-slate-700/80">v2.6 Enterprise</span>
+                    </div>
+                </div>
+
+                <!-- Global Command Palette Search Trigger (⌘K) -->
+                <button onclick="openCommandPalette()" class="hidden lg:flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#0B0F19] border border-slate-800 hover:border-slate-700 text-xs text-slate-400 w-64 justify-between transition-colors shadow-inner">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500"></i>
+                        <span>Search sanctuaries or routes...</span>
+                    </span>
+                    <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700/80">⌘K</kbd>
+                </button>
+            </div>
+
+            <!-- Center: View Switcher Navigation -->
+            <nav class="hidden md:flex items-center gap-1">
+                <button id="nav-explore" onclick="switchView('explore')" class="nav-btn active flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <i data-lucide="compass" class="w-4 h-4"></i>
+                    <span>Sanctuaries</span>
+                </button>
+                <button id="nav-dashboard" onclick="switchView('dashboard')" class="nav-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <i data-lucide="map" class="w-4 h-4"></i>
+                    <span>Expeditions & Routes</span>
+                    <span id="nav-trip-count-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-sky-500/20 text-sky-400 font-mono font-semibold">2</span>
+                </button>
+                <button id="nav-commons" onclick="switchView('commons')" class="nav-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    <span>The Commons</span>
+                </button>
+                <button onclick="openContactModal()" class="nav-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <i data-lucide="headphones" class="w-4 h-4"></i>
+                    <span>Concierge</span>
+                </button>
+            </nav>
+
+            <!-- Right: Action Controls & Dynamic Auth -->
+            <div class="flex items-center gap-2.5">
+                <!-- Solitude Soundscape Audio Toggle -->
+                <button id="ambient-audio-btn" onclick="toggleAmbientAudio()" title="Soundscapes of Solitude (Generative Web Audio)" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#0B0F19] border border-slate-800 hover:border-slate-700 text-xs font-mono text-slate-300 transition-colors">
+                    <i id="audio-icon" data-lucide="volume-x" class="w-4 h-4 text-slate-400"></i>
+                    <span id="audio-status" class="hidden xl:inline text-[11px]">Soundscape Off</span>
+                </button>
+
+                <!-- Contribute Sanctuary CTA -->
+                <button onclick="openSubmitModal()" class="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0B0F19] hover:bg-slate-850 border border-slate-800 text-xs font-medium text-slate-200 transition-colors">
+                    <i data-lucide="plus" class="w-3.5 h-3.5 text-sky-400"></i>
+                    <span>Add Spot</span>
+                </button>
+
+                <!-- Logged Out Auth Controls -->
+                <div id="auth-logged-out" class="flex items-center gap-2">
+                    <button onclick="openLoginModal()" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+                        Sign In
+                    </button>
+                    <button onclick="openRegisterModal()" class="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs transition-all shadow-sm">
+                        Create Account
+                    </button>
+                </div>
+
+                <!-- Logged In User Dropdown Menu -->
+                <div id="auth-logged-in" class="hidden relative">
+                    <button onclick="toggleUserMenu()" class="flex items-center gap-2.5 p-1 pr-2.5 rounded-lg bg-[#0B0F19] border border-slate-800 hover:border-slate-700 transition-colors">
+                        <img id="header-user-avatar" src="" alt="Avatar" class="w-7 h-7 rounded-md object-cover bg-slate-800 border border-slate-700">
+                        <div class="text-left hidden sm:block">
+                            <div id="header-user-name" class="text-xs font-semibold text-slate-200 leading-tight">Purvaj</div>
+                            <div id="header-user-role" class="text-[10px] font-mono text-sky-400 leading-none">Verified Explorer</div>
+                        </div>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </button>
+
+                    <div id="user-menu" class="hidden absolute right-0 mt-2 w-64 bg-[#0F172A] border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 space-y-1">
+                        <div class="px-3 py-2 border-b border-slate-800/80">
+                            <div id="dropdown-user-email" class="text-xs font-mono text-slate-400 truncate">purvaj@wanderlore.com</div>
+                            <div id="dropdown-user-title" class="text-[11px] font-medium text-sky-400 mt-0.5">Astro-Backpacker</div>
+                        </div>
+                        <button onclick="switchView('dashboard'); setDashboardTab('itineraries'); toggleUserMenu();" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/80 text-xs text-slate-200 flex items-center gap-2 transition-colors">
+                            <i data-lucide="map" class="w-4 h-4 text-sky-400"></i> Planned Expeditions & Routes
+                        </button>
+                        <button onclick="switchView('dashboard'); setDashboardTab('bookings'); toggleUserMenu();" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/80 text-xs text-slate-200 flex items-center gap-2 transition-colors">
+                            <i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i> Active Sanctuary Permits
+                        </button>
+                        <button onclick="switchView('dashboard'); setDashboardTab('account'); toggleUserMenu();" class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800/80 text-xs text-slate-200 flex items-center gap-2 transition-colors">
+                            <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i> Account & Preferences
+                        </button>
+                        <div class="border-t border-slate-800/80 pt-1">
+                            <button onclick="handleLogout()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-red-500/10 text-xs text-red-400 flex items-center gap-2 transition-colors">
+                                <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0F172A]/95 backdrop-blur-md border-t border-slate-800 py-2.5 px-6 flex justify-around items-center text-[10px] font-medium">
+        <button onclick="switchView('explore')" class="flex flex-col items-center gap-1 text-sky-400">
+            <i data-lucide="compass" class="w-5 h-5"></i>
+            <span>Sanctuaries</span>
+        </button>
+        <button onclick="switchView('dashboard')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+            <i data-lucide="map" class="w-5 h-5"></i>
+            <span>Trips</span>
+        </button>
+        <button onclick="openCommandPalette()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+            <i data-lucide="search" class="w-5 h-5"></i>
+            <span>Search</span>
+        </button>
+        <button onclick="switchView('commons')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+            <i data-lucide="users" class="w-5 h-5"></i>
+            <span>Commons</span>
+        </button>
+        <button onclick="openContactModal()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+            <i data-lucide="headphones" class="w-5 h-5"></i>
+            <span>Concierge</span>
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col mb-16 md:mb-0 space-y-6">
+
+        <!-- ==================== VIEW 1: SANCTUARIES & CARTO COMPASS ==================== -->
+        <section id="view-explore" class="space-y-6 flex-1 flex flex-col">
+            
+            <!-- Personalized Traveler Profile Notification -->
+            <div id="personalized-banner" class="bg-[#0F172A] border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+                            <span>EXPLORER PROFILE: <strong id="banner-username" class="text-sky-400 uppercase font-semibold">PURVAJ</strong></span>
+                            <span class="text-slate-600">•</span>
+                            <span id="banner-user-title" class="text-slate-400 hidden md:inline">Astro-Backpacker & Solitude Seeker</span>
+                        </div>
+                        <div class="text-sm font-semibold text-slate-200 mt-0.5" id="banner-match-summary">
+                            Found 4 sanctuaries with 90%+ match to your solitude and dark sky preferences.
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="applyCategoryFilter('Recommended')" class="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors">
+                        <i data-lucide="star" class="w-3.5 h-3.5"></i>
+                        <span>Matched For You</span>
+                    </button>
+                    <button onclick="openCreateTripModal()" class="px-3 py-1.5 rounded-lg bg-[#0B0F19] hover:bg-slate-850 border border-slate-800 text-xs font-medium text-slate-300 flex items-center gap-1.5 transition-colors">
+                        <i data-lucide="plus" class="w-3.5 h-3.5 text-sky-400"></i>
+                        <span>Plan Route</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPI Metric Summary Ribbon (4-Card Enterprise Grid) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Metric 1: Sanctuaries -->
+                <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Sanctuaries</span>
+                        <div class="w-7 h-7 rounded-md bg-sky-500/10 text-sky-400 flex items-center justify-center">
+                            <i data-lucide="compass" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-display text-white tracking-tight" id="stat-sanctuaries">12</div>
+                        <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span class="text-emerald-400 font-medium">100% verified</span>
+                            <span>• zero mass tourism</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metric 2: Acoustic Calm -->
+                <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Acoustic Calm</span>
+                        <div class="w-7 h-7 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                            <i data-lucide="volume-2" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-display text-white tracking-tight" id="stat-decibel">18.2 dB</div>
+                        <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span class="text-emerald-400 font-medium">-42 dB</span>
+                            <span>quieter than urban baseline</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metric 3: Solitude Rating -->
+                <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Solitude Index</span>
+                        <div class="w-7 h-7 rounded-md bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                            <i data-lucide="radio" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-display text-white tracking-tight" id="stat-solitude">94.6%</div>
+                        <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span class="text-purple-400 font-medium">Zero signal</span>
+                            <span>• high wilderness isolation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metric 4: Active Permits -->
+                <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-4 flex flex-col justify-between space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Eco-Permits</span>
+                        <div class="w-7 h-7 rounded-md bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                            <i data-lucide="ticket" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold font-display text-white tracking-tight" id="stat-permits">2</div>
+                        <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span class="text-amber-400 font-medium">Strict quota</span>
+                            <span>• max 6 guests per zone</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter & Precision Search Controls Bar -->
+            <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-4 space-y-3.5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    
+                    <!-- Search Input with Keyboard Shortcut Hint -->
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input id="search-input" type="text" placeholder="Filter by sanctuary name, region, country, or keyword..."
+                               class="w-full pl-10 pr-12 py-2 bg-[#0B0F19] border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-500">Ctrl+K</span>
+                    </div>
+
+                    <!-- Solitude Threshold Slider -->
+                    <div class="flex items-center gap-3 bg-[#0B0F19] px-3.5 py-1.5 rounded-lg border border-slate-800">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                        <div class="flex flex-col">
+                            <div class="flex justify-between text-xs font-mono text-slate-300">
+                                <span>Solitude:</span>
+                                <span id="solitude-val" class="text-emerald-400 font-bold ml-2">70%</span>
+                            </div>
+                            <input id="solitude-slider" type="range" min="0" max="95" value="70" step="5"
+                                   class="w-28 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+                        </div>
+                    </div>
+
+                    <!-- Split / Map / Directory View Toggle -->
+                    <div class="flex items-center bg-[#0B0F19] p-1 rounded-lg border border-slate-800 text-xs font-mono">
+                        <button id="toggle-split" onclick="setDisplayMode('split')" class="px-3 py-1 rounded-md font-medium text-sky-400 bg-slate-800">Split</button>
+                        <button id="toggle-map" onclick="setDisplayMode('map')" class="px-3 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200">Map</button>
+                        <button id="toggle-grid" onclick="setDisplayMode('grid')" class="px-3 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200">Directory</button>
+                    </div>
+                </div>
+
+                <!-- Category Filter Pills -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="category-filters">
+                    <button class="cat-pill active px-3 py-1 rounded-md text-xs font-mono tracking-wide" data-category="All">All Categories</button>
+                    <button class="cat-pill px-3 py-1 rounded-md text-xs font-mono tracking-wide text-sky-400 flex items-center gap-1.5" data-category="Recommended">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                        <span>Matches For You</span>
+                    </button>
+                    <button class="cat-pill px-3 py-1 rounded-md text-xs font-mono tracking-wide" data-category="Forgotten Ruins">Forgotten Ruins</button>
+                    <button class="cat-pill px-3 py-1 rounded-md text-xs font-mono tracking-wide" data-category="Stargazing Sanctuaries">Stargazing</button>
+                    <button class="cat-pill px-3 py-1 rounded-md text-xs font-mono tracking-wide" data-category="Sacred Groves">Sacred Groves</button>
+                    <button class="cat-pill px-3 py-1 rounded-md text-xs font-mono tracking-wide" data-category="Subterranean & Geo">Subterranean</button>
+                    <button class="cat-pill px-3 py-1 rounded-md text-xs font-mono tracking-wide" data-category="Ghost Towns">Ghost Towns</button>
+                </div>
+            </div>
+
+            <!-- Asymmetric 12-Column Grid: Directory (5 cols) & Cartography Canvas (7 cols) -->
+            <div id="explorer-container" class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 min-h-[580px]">
+                
+                <!-- Interactive Topographic Canvas (7 cols) -->
+                <div id="map-wrapper" class="lg:col-span-7 flex flex-col rounded-xl overflow-hidden border border-slate-800 bg-[#0F172A] shadow-sm relative">
+                    <div class="px-4 py-2 bg-[#0F172A] border-b border-slate-800 flex items-center justify-between z-10 text-xs font-mono text-slate-400">
+                        <span class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="map-header-status">High-Precision Cartography Canvas</span>
+                        </span>
+                        <span id="spots-count-badge" class="text-sky-400 font-semibold">12 mapped</span>
+                    </div>
+                    <!-- Map Mount Point (Supports Leaflet + Google Maps) -->
+                    <div id="sanctuary-map" class="w-full flex-1 min-h-[460px]"></div>
+                </div>
+
+                <!-- Sanctuaries Directory Grid (5 cols) -->
+                <div id="grid-wrapper" class="lg:col-span-5 flex flex-col space-y-3">
+                    <div class="flex items-center justify-between text-xs font-mono text-slate-400 px-1">
+                        <span class="uppercase tracking-wider">Discovered Sanctuaries</span>
+                        <span id="sort-label" class="text-slate-500">Ranked by Solitude Match</span>
+                    </div>
+                    
+                    <!-- Spots List Container -->
+                    <div id="spots-list" class="space-y-3 overflow-y-auto max-h-[640px] pr-1">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 2: ENTERPRISE DASHBOARD & ROUTES ==================== -->
+        <section id="view-dashboard" class="space-y-6 hidden flex-1">
+            
+            <!-- Dashboard Member Profile Card -->
+            <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center gap-4">
+                        <img id="dashboard-avatar" src="" alt="Avatar" class="w-14 h-14 rounded-xl border border-slate-700 object-cover bg-slate-800">
+                        <div class="space-y-1">
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-sky-500/10 text-sky-400 border border-sky-500/20 text-xs font-mono">
+                                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                                <span>VERIFIED EXPLORER MEMBER</span>
+                            </div>
+                            <h2 class="font-display text-xl sm:text-2xl font-bold text-white tracking-tight" id="dashboard-display-name">Purvaj</h2>
+                            <p class="text-xs text-slate-400 font-mono" id="dashboard-title">Astro-Backpacker & Solitude Seeker</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button onclick="openCreateTripModal()" class="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs transition-all shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+                            <span>New Expedition Route</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Tabs -->
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-mono overflow-x-auto">
+                <button onclick="setDashboardTab('itineraries')" id="tab-dash-itineraries" class="px-3.5 py-2 rounded-lg bg-slate-800 text-sky-400 font-semibold border border-sky-500/30 flex items-center gap-2">
+                    <i data-lucide="map" class="w-4 h-4"></i>
+                    <span>Expeditions & Waypoint Routes</span>
+                </button>
+                <button onclick="setDashboardTab('bookings')" id="tab-dash-bookings" class="px-3.5 py-2 rounded-lg bg-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+                    <i data-lucide="ticket" class="w-4 h-4"></i>
+                    <span>Active Permits & Reservations</span>
+                </button>
+                <button onclick="setDashboardTab('wishlist')" id="tab-dash-wishlist" class="px-3.5 py-2 rounded-lg bg-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+                    <i data-lucide="bookmark" class="w-4 h-4"></i>
+                    <span>Saved Sanctuaries (<span id="dash-wishlist-count">0</span>)</span>
+                </button>
+                <button onclick="setDashboardTab('account')" id="tab-dash-account" class="px-3.5 py-2 rounded-lg bg-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+                    <i data-lucide="settings" class="w-4 h-4"></i>
+                    <span>Account & Security</span>
+                </button>
+            </div>
+
+            <!-- Dashboard Sub-View 1: Itineraries & Waypoints Route Visualizer -->
+            <div id="subview-itineraries" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[500px]">
+                    <!-- Itineraries List (5 cols) -->
+                    <div class="lg:col-span-5 space-y-3">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-2 px-1">
+                            <span class="text-xs font-mono text-slate-400 uppercase tracking-wider">Planned Expeditions</span>
+                            <button onclick="openCreateTripModal()" class="text-xs font-mono text-sky-400 hover:underline flex items-center gap-1">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Trip
+                            </button>
+                        </div>
+
+                        <div id="trips-list" class="space-y-3">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Selected Trip Waypoint Route & Map (7 cols) -->
+                    <div class="lg:col-span-7 bg-[#0F172A] border border-slate-800 rounded-xl p-5 flex flex-col space-y-4 shadow-sm">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <h3 class="font-display text-base font-bold text-white tracking-tight" id="active-trip-title">Select an Itinerary</h3>
+                                <div class="text-xs font-mono text-slate-400 mt-0.5" id="active-trip-meta">Route & Waypoints</div>
+                            </div>
+                            <button id="btn-add-waypoint" onclick="openAddWaypointModal()" class="hidden px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0B0F19] font-bold text-xs font-mono flex items-center gap-1.5 transition-colors">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> Add Waypoint
+                            </button>
+                        </div>
+
+                        <!-- Itinerary Map with Route Polyline -->
+                        <div id="trip-route-map" class="w-full h-72 rounded-lg border border-slate-800 bg-[#0B0F19] overflow-hidden relative"></div>
+
+                        <!-- Waypoints Sequence -->
+                        <div class="space-y-2 flex-1">
+                            <div class="text-xs font-mono text-slate-400 flex items-center justify-between">
+                                <span>Day-by-Day Route Waypoints</span>
+                                <span id="route-distance-label" class="text-sky-400">Connected Sequence</span>
+                            </div>
+                            <div id="trip-waypoints-list" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                <!-- Rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Sub-View 2: Active Bookings & Permits -->
+            <div id="subview-bookings" class="hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                        <h3 class="font-display text-lg font-bold text-white tracking-tight">Confirmed Sanctuary Permits & Stays</h3>
+                        <p class="text-xs text-slate-400">Low-impact permits. Present your Permit ID to local sanctuary guardians upon arrival.</p>
+                    </div>
+                </div>
+
+                <div id="bookings-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Dashboard Sub-View 3: Saved Wishlist -->
+            <div id="subview-wishlist" class="hidden space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="font-display text-lg font-bold text-white tracking-tight">Saved Sanctuaries Ledger</h3>
+                    <span class="text-xs font-mono text-slate-400">Private Expedition Queue</span>
+                </div>
+                <div id="dash-wishlist-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Dashboard Sub-View 4: Account & Security -->
+            <div id="subview-account" class="hidden space-y-6 max-w-2xl">
+                <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-6 space-y-5">
+                    <h3 class="font-display text-lg font-bold text-white tracking-tight">Explorer Profile Settings</h3>
+                    <form onsubmit="handleAccountUpdate(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-mono text-slate-300">Display Name</label>
+                                <input id="acc-name" required type="text" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-mono text-slate-300">Travel Calling / Title</label>
+                                <input id="acc-title" required type="text" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-mono text-slate-300">Bio & Travel Ethos</label>
+                            <textarea id="acc-bio" rows="2" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none"></textarea>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-mono text-slate-300">Avatar Image URL</label>
+                            <input id="acc-avatar" type="url" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                        </div>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider transition-colors">
+                            Save Profile Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== VIEW 3: THE COMMONS & EXPEDITIONS ==================== -->
+        <section id="view-commons" class="space-y-6 hidden flex-1">
+            <div class="bg-[#0F172A] border border-slate-800 rounded-xl p-6 sm:p-7 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="space-y-2 max-w-2xl">
+                        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-mono">
+                            <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            <span>COMMONS & EXPEDITION TRIBES</span>
+                        </div>
+                        <h2 class="font-display text-2xl font-bold text-white tracking-tight">
+                            Low-Impact Community & Verified Intel.
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                            Coordinate small-group zero-trace expeditions (strictly capped at 6 travelers) or consult local guardians on current water sources and trail hazards.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="openPostDiscussionModal()" class="px-3.5 py-2 rounded-lg bg-[#0B0F19] hover:bg-slate-850 border border-slate-800 text-slate-200 text-xs font-medium transition-colors">
+                            Ask Question
+                        </button>
+                        <button onclick="openCreateExpeditionModal()" class="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0B0F19] font-bold text-xs transition-colors">
+                            <i data-lucide="compass" class="w-4 h-4"></i>
+                            <span>Assemble Tribe</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-Nav Tabs -->
+            <div class="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-mono">
+                <button onclick="switchCommonsTab('expeditions')" id="tab-btn-expeditions" class="px-3.5 py-1.5 rounded-lg bg-slate-800 text-sky-400 font-semibold border border-sky-500/30">
+                    Active Expeditions
+                </button>
+                <button onclick="switchCommonsTab('discussions')" id="tab-btn-discussions" class="px-3.5 py-1.5 rounded-lg bg-transparent text-slate-400 hover:text-slate-200">
+                    Community Advice & Discussions
+                </button>
+            </div>
+
+            <!-- Tab 1: Expeditions -->
+            <div id="commons-tab-expeditions" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-8 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 px-1">
+                        <h3 class="font-display text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="tent" class="w-4 h-4 text-sky-400"></i>
+                            <span>Upcoming Offbeat Expeditions</span>
+                        </h3>
+                        <span class="text-xs font-mono text-slate-400">Max 6 Travelers per Tribe</span>
+                    </div>
+                    <div id="expeditions-list" class="space-y-3"></div>
+                </div>
+
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 px-1">
+                        <h3 class="font-display text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="message-square" class="w-4 h-4 text-emerald-400"></i>
+                            <span>Recent Field Notes</span>
+                        </h3>
+                        <span class="text-xs font-mono text-slate-400">Trail Intel</span>
+                    </div>
+                    <div id="field-notes-feed" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Discussions -->
+            <div id="commons-tab-discussions" class="hidden space-y-4">
+                <div id="discussions-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==================== MODAL: SPOT DETAIL & RIDDLE QUEST ==================== -->
+    <div id="spot-detail-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+            <button onclick="closeSpotDetailModal()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-lg bg-[#0B0F19]/80 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <!-- Hero Image Header -->
+            <div class="relative h-60 sm:h-64 w-full overflow-hidden">
+                <img id="modal-img" src="" alt="Sanctuary" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/40 to-transparent"></div>
+                
+                <div class="absolute bottom-4 left-6 right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="modal-category" class="px-2.5 py-0.5 rounded-md text-xs font-mono bg-sky-500/20 text-sky-400 border border-sky-500/30">Category</span>
+                            <span id="modal-region" class="text-xs font-mono text-slate-300">Region, Country</span>
+                        </div>
+                        <h2 id="modal-title" class="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">Sanctuary Name</h2>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="openBookingFromModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider transition-colors shadow-sm">
+                            <i data-lucide="ticket" class="w-4 h-4"></i>
+                            <span>Reserve Permit</span>
+                        </button>
+                        <button id="modal-bookmark-btn" onclick="toggleCurrentSpotBookmark()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0B0F19] border border-slate-700 hover:border-slate-500 text-xs font-mono text-slate-300 transition-colors">
+                            <i id="modal-bookmark-icon" data-lucide="bookmark" class="w-4 h-4"></i>
+                            <span id="modal-bookmark-label">Save</span>
+                        </button>
+                        <button id="modal-upvote-btn" onclick="upvoteCurrentSpot()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0B0F19] border border-slate-700 hover:border-slate-500 text-xs font-mono text-sky-400 transition-colors">
+                            <i data-lucide="heart" class="w-4 h-4"></i>
+                            <span id="modal-upvotes-count">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <!-- Personal Match Callout in Modal -->
+                <div id="modal-match-box" class="bg-sky-500/10 border border-sky-500/25 rounded-xl p-3 flex items-center justify-between text-xs font-mono">
+                    <span class="text-sky-400 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <strong id="modal-match-percent">95% Match</strong> for your active explorer profile
+                    </span>
+                    <span class="text-slate-400 text-[11px]" id="modal-match-reason">Matches your Stargazing & Solitude preference</span>
+                </div>
+
+                <!-- Metrics Badges -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-[#0B0F19] border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Solitude Score</div>
+                        <div id="modal-solitude" class="font-display text-xl font-bold text-emerald-400">95/100</div>
+                    </div>
+                    <div class="bg-[#0B0F19] border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Acoustic Calm</div>
+                        <div id="modal-decibel" class="font-display text-xl font-bold text-sky-400">18 dB</div>
+                    </div>
+                    <div class="bg-[#0B0F19] border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Cellular Signal</div>
+                        <div id="modal-signal" class="text-xs font-mono font-medium text-amber-400 truncate">0 Bars</div>
+                    </div>
+                    <div class="bg-[#0B0F19] border border-slate-800 rounded-xl p-3">
+                        <div class="text-[11px] font-mono text-slate-400">Permit Stewardship</div>
+                        <div id="modal-price" class="text-xs font-mono font-bold text-emerald-400">$15 / guest</div>
+                    </div>
+                </div>
+
+                <!-- Lore & Narrative -->
+                <div class="space-y-2">
+                    <h3 class="font-display text-sm font-bold text-slate-200 flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-4 h-4 text-sky-400"></i>
+                        <span>Cultural Lore & Discovery</span>
+                    </h3>
+                    <p id="modal-lore" class="text-xs sm:text-sm text-slate-300 leading-relaxed bg-[#0B0F19] p-4 rounded-xl border border-slate-800"></p>
+                </div>
+
+                <!-- Protection Box / Coordinates Riddle Quest -->
+                <div id="coordinates-section" class="rounded-xl border border-slate-800 p-5 bg-[#0B0F19]"></div>
+
+                <!-- Guardian & Leave No Trace -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-[#0B0F19] p-4 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex items-center gap-2 text-xs font-mono text-sky-400">
+                            <i data-lucide="shield" class="w-4 h-4"></i>
+                            <span>LOCAL GUARDIAN</span>
+                        </div>
+                        <div id="modal-guardian-name" class="font-semibold text-slate-200 text-sm">Guardian Name</div>
+                        <div id="modal-guardian-title" class="text-xs text-slate-400 font-mono">Role / Conservation title</div>
+                    </div>
+
+                    <div class="bg-[#0B0F19] p-4 rounded-xl border border-slate-800 space-y-1.5">
+                        <div class="flex items-center gap-2 text-xs font-mono text-emerald-400">
+                            <i data-lucide="leaf" class="w-4 h-4"></i>
+                            <span>LEAVE NO TRACE PROTOCOL</span>
+                        </div>
+                        <p id="modal-lnt" class="text-xs text-slate-300">Guidelines...</p>
+                    </div>
+                </div>
+
+                <!-- Community Field Notes -->
+                <div class="space-y-4 pt-2 border-t border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-display text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i data-lucide="message-square" class="w-4 h-4 text-sky-400"></i>
+                            <span>Trail Intel & Field Notes</span>
+                        </h3>
+                        <span class="text-xs font-mono text-slate-400" id="modal-notes-count">0 Notes</span>
+                    </div>
+
+                    <div id="modal-notes-list" class="space-y-3"></div>
+
+                    <!-- Add Note Form -->
+                    <div class="bg-[#0B0F19] p-4 rounded-xl border border-slate-800 space-y-3">
+                        <div class="text-xs font-mono text-slate-300 font-semibold">Post a Field Note / Hazard Alert:</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input id="note-author" type="text" placeholder="Your Name" class="bg-[#0F172A] border border-slate-800 px-3 py-2 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                            <select id="note-badge" class="bg-[#0F172A] border border-slate-800 px-3 py-2 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                                <option value="Astro-Backpacker">Astro-Backpacker</option>
+                                <option value="Pathfinder">Pathfinder</option>
+                                <option value="Local Guardian">Local Guardian</option>
+                                <option value="Dark Sky Sentinel">Dark Sky Sentinel</option>
+                            </select>
+                            <select id="note-type" class="bg-[#0F172A] border border-slate-800 px-3 py-2 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                                <option value="Trail Alert">Trail Alert</option>
+                                <option value="Water Source">Water Source</option>
+                                <option value="Local Lore">Local Lore</option>
+                                <option value="Camping Advice">Camping Advice</option>
+                            </select>
+                        </div>
+                        <textarea id="note-content" rows="2" placeholder="Describe the trail condition, scree, water sources, or access advice..." class="w-full bg-[#0F172A] border border-slate-800 p-3 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-sky-500"></textarea>
+                        <button onclick="submitFieldNote()" class="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs tracking-wider uppercase transition-colors">
+                            Submit Field Note
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: SPOTLIGHT COMMAND PALETTE (⌘K / Ctrl+K) ==================== -->
+    <div id="command-palette-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-md hidden items-start justify-center pt-20 p-4">
+        <div class="bg-[#0F172A] border border-slate-700/80 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150">
+            <!-- Command Input -->
+            <div class="flex items-center px-4 py-3.5 border-b border-slate-800 gap-3">
+                <i data-lucide="search" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                <input id="command-palette-input" type="text" placeholder="Type a sanctuary, action, or command (e.g. 'Atlas', 'Trip', 'Key')..." 
+                       class="w-full bg-transparent border-none text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-0">
+                <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700 shrink-0">ESC</kbd>
+            </div>
+
+            <!-- Command Results Container -->
+            <div id="command-palette-results" class="max-h-80 overflow-y-auto p-2 space-y-1">
+                <!-- Populated dynamically by app.js -->
+            </div>
+
+            <!-- Command Palette Footer Navigation Hints -->
+            <div class="px-4 py-2 bg-[#0B0F19] border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-500">
+                <div class="flex items-center gap-3">
+                    <span><kbd class="text-slate-400">↑↓</kbd> navigate</span>
+                    <span><kbd class="text-slate-400">↵</kbd> select</span>
+                    <span><kbd class="text-slate-400">esc</kbd> close</span>
+                </div>
+                <span class="text-sky-400">WanderLore Command Spotlight</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: AUTHENTICATION (LOG IN) ==================== -->
+    <div id="login-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-7 space-y-5 shadow-2xl relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">WANDERLORE PASSPORT</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Sign In to Your Account</h2>
+                <p class="text-xs text-slate-400">Access saved expedition routes, confirmed permits, and guardian waypoints.</p>
+            </div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-3.5">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Email Address</label>
+                    <input id="login-email" required type="email" placeholder="purvaj@wanderlore.com" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-mono text-slate-300">Password</label>
+                        <button type="button" onclick="closeLoginModal(); openForgotModal();" class="text-[11px] font-mono text-sky-400 hover:underline">Forgot password?</button>
+                    </div>
+                    <input id="login-password" required type="password" placeholder="••••••••" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+
+                <div class="p-3 bg-[#0B0F19] border border-slate-800 rounded-lg text-[11px] font-mono text-slate-400 flex items-center justify-between">
+                    <span>Pre-seeded Explorer:</span>
+                    <button type="button" onclick="fillDemoLogin()" class="text-sky-400 underline font-bold">Auto-Fill Credentials</button>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider transition-all">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="text-center text-xs font-mono text-slate-400 border-t border-slate-800 pt-3">
+                Don't have an account? <button onclick="closeLoginModal(); openRegisterModal();" class="text-sky-400 underline">Sign up free</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: AUTHENTICATION (SIGN UP) ==================== -->
+    <div id="register-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-7 space-y-5 shadow-2xl relative">
+            <button onclick="closeRegisterModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">NEW EXPLORER</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Create WanderLore Passport</h2>
+                <p class="text-xs text-slate-400">Join a verified network of low-impact, offbeat travelers.</p>
+            </div>
+
+            <form onsubmit="handleRegisterSubmit(event)" class="space-y-3.5">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Full Name</label>
+                    <input id="reg-name" required type="text" placeholder="e.g. Alex Hunter" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Email Address</label>
+                    <input id="reg-email" required type="email" placeholder="alex@wanderlore.com" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Password (min 6 characters)</label>
+                    <input id="reg-password" required minlength="6" type="password" placeholder="••••••••" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="p-3 bg-[#0B0F19] border border-slate-800 rounded-lg">
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input id="reg-pledge" required type="checkbox" checked class="mt-0.5 w-4 h-4 rounded text-emerald-500 focus:ring-0">
+                        <span class="text-[11px] text-slate-300 leading-tight">
+                            I solemnly take the <strong>Leave-No-Trace Vow</strong>: to pack out all waste, respect acoustic silence, and not broadcast fragile coordinates on public social media.
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider transition-all">
+                    Register Account
+                </button>
+            </form>
+
+            <div class="text-center text-xs font-mono text-slate-400 border-t border-slate-800 pt-3">
+                Already registered? <button onclick="closeRegisterModal(); openLoginModal();" class="text-emerald-400 underline">Sign in</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: FORGOT / RESET PASSWORD ==================== -->
+    <div id="forgot-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-7 space-y-5 shadow-2xl relative">
+            <button onclick="closeForgotModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">RECOVERY</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Reset Your Password</h2>
+                <p class="text-xs text-slate-400">Generate a recovery token to restore access to your account.</p>
+            </div>
+
+            <!-- Step 1: Request Token -->
+            <form id="forgot-step1-form" onsubmit="handleForgotStep1(event)" class="space-y-3.5">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Registered Email</label>
+                    <input id="forgot-email" required type="email" value="purvaj@wanderlore.com" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider">
+                    Generate Reset Token
+                </button>
+            </form>
+
+            <!-- Step 2: Enter Token & New Password -->
+            <form id="forgot-step2-form" onsubmit="handleForgotStep2(event)" class="space-y-3.5 hidden">
+                <div class="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-lg text-xs font-mono text-emerald-300">
+                    Token generated: <strong id="demo-token-display"></strong>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Reset Token</label>
+                    <input id="reset-token-input" required type="text" placeholder="WL-XXXXXX" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 uppercase focus:border-sky-500 focus:outline-none">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">New Password (min 6 characters)</label>
+                    <input id="reset-new-password" required minlength="6" type="password" placeholder="••••••••" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider">
+                    Update Password & Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: RESERVE ECO-PERMIT ==================== -->
+    <div id="booking-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl relative">
+            <button onclick="closeBookingModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">CONSERVATION PERMIT</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Reserve Sanctuary Access</h2>
+                <p class="text-xs text-slate-400" id="booking-modal-subtitle">Permit proceeds directly support local guardian trail maintenance.</p>
+            </div>
+
+            <form onsubmit="handleBookingSubmit(event)" class="space-y-3.5">
+                <input id="booking-spot-id" type="hidden">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Sanctuary Destination</label>
+                    <input id="booking-spot-name" readonly type="text" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-sky-400 font-bold">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Travel Date *</label>
+                        <input id="booking-date" required type="date" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Party Size (Strict Cap: 6)</label>
+                        <select id="booking-party" onchange="calculateBookingTotal()" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                            <option value="1">1 Explorer (Solo Bivy)</option>
+                            <option value="2">2 Explorers</option>
+                            <option value="3">3 Explorers</option>
+                            <option value="4">4 Explorers</option>
+                            <option value="5">5 Explorers</option>
+                            <option value="6">6 Explorers (Max)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Permit Type</label>
+                    <select id="booking-type" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                        <option value="Sanctuary Conservation Eco-Permit">Sanctuary Conservation Eco-Permit</option>
+                        <option value="Guided Sacred Grove / Night Sky Walk">Guided Sacred Grove / Night Sky Walk</option>
+                        <option value="Packraft / Kayak Waterway Passage">Packraft / Kayak Waterway Passage</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Special Notes / Vehicle Clearance</label>
+                    <input id="booking-requests" type="text" placeholder="e.g. 4x4 high clearance, carrying red-light headlamps..." class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                </div>
+
+                <!-- Price Calculation Box -->
+                <div class="p-3 bg-[#0B0F19] border border-slate-800 rounded-xl flex items-center justify-between text-xs font-mono">
+                    <span class="text-slate-400">Total Environmental Stewardship Fee:</span>
+                    <span id="booking-total-price" class="font-display text-base font-bold text-emerald-400">$15.00</span>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider transition-all">
+                    Confirm & Issue Eco-Permit
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: CREATE EXPEDITION ITINERARY ==================== -->
+    <div id="create-trip-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl relative">
+            <button onclick="closeCreateTripModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">ROUTE PLANNER</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Create Expedition Itinerary</h2>
+                <p class="text-xs text-slate-400">Assemble multi-day waypoints, coordinates, and packing notes.</p>
+            </div>
+
+            <form onsubmit="handleTripSubmit(event)" class="space-y-3.5">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Expedition Title *</label>
+                    <input id="trip-title" required type="text" placeholder="e.g. Desert Solstice & Dark Sky Traverse" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Destination Region *</label>
+                    <input id="trip-destination" required type="text" placeholder="e.g. Anza-Borrego & Salton Sink, CA" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Start Date *</label>
+                        <input id="trip-start" required type="date" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">End Date</label>
+                        <input id="trip-end" type="date" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Expedition Objectives & Notes</label>
+                    <textarea id="trip-notes" rows="2" placeholder="e.g. Target Bortle 1 astrophotography, carry 8L water per person..." class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider">
+                    Create Itinerary & Plot Waypoints
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: ADD WAYPOINT TO ITINERARY ==================== -->
+    <div id="add-waypoint-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-2xl relative">
+            <button onclick="closeAddWaypointModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">GPS WAYPOINT</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Add Route Waypoint</h2>
+                <p class="text-xs text-slate-400">Add a trail stop, campsite, or water checkpoint to this itinerary.</p>
+            </div>
+
+            <form onsubmit="handleWaypointSubmit(event)" class="space-y-3">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Waypoint Name *</label>
+                    <input id="wp-title" required type="text" placeholder="e.g. Font's Point Badlands Overlook" class="w-full bg-[#0B0F19] border border-slate-800 p-2 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Latitude *</label>
+                        <input id="wp-lat" required step="any" type="number" placeholder="33.3032" class="w-full bg-[#0B0F19] border border-slate-800 p-2 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Longitude *</label>
+                        <input id="wp-lng" required step="any" type="number" placeholder="-116.2341" class="w-full bg-[#0B0F19] border border-slate-800 p-2 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Day Sequence</label>
+                        <input id="wp-day" type="number" min="1" max="14" value="1" class="w-full bg-[#0B0F19] border border-slate-800 p-2 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Quick Pin Preset</label>
+                        <select onchange="presetWaypointCoords(this.value)" class="w-full bg-[#0B0F19] border border-slate-800 p-2 rounded-lg text-xs text-slate-200">
+                            <option value="">Custom Pin</option>
+                            <option value="33.2560,-116.3752">Anza-Borrego Petroglyphs</option>
+                            <option value="33.3032,-116.2341">Font's Point Overlook</option>
+                            <option value="33.0039,-116.1022">Fish Creek Wash Camp</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Waypoint Notes</label>
+                    <input id="wp-notes" type="text" placeholder="e.g. Tire pressure drop point / freshwater spring" class="w-full bg-[#0B0F19] border border-slate-800 p-2 rounded-lg text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider">
+                    Plot Waypoint on Map
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: CONTACT CONCIERGE ==================== -->
+    <div id="contact-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl relative">
+            <button onclick="closeContactModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">SANCTUARY CONCIERGE</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Contact Sanctuary Concierge</h2>
+                <p class="text-xs text-slate-400">Inquire about seasonal access, trail conditions, or private off-grid guidance.</p>
+            </div>
+
+            <form onsubmit="handleContactSubmit(event)" class="space-y-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Your Name *</label>
+                        <input id="contact-name" required type="text" placeholder="Purvaj" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Email Address *</label>
+                        <input id="contact-email" required type="email" placeholder="purvaj@wanderlore.com" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Subject</label>
+                    <input id="contact-subject" type="text" placeholder="e.g. Permit guidelines for Anza-Borrego solstice camp" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Message / Inquiries *</label>
+                    <textarea id="contact-message" required rows="3" placeholder="Tell us about your proposed dates, group size, or questions..." class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider transition-all">
+                    Send to Concierge
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: GOOGLE MAPS CONFIG ==================== -->
+    <div id="gmaps-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-2xl relative">
+            <button onclick="closeGmapsConfigModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">CARTOGRAPHY ENGINE</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Cartography Configuration</h2>
+                <p class="text-xs text-slate-400">Configure your Google Maps JavaScript API key or use built-in CartoDB dark vector tiles.</p>
+            </div>
+
+            <div class="p-3.5 bg-[#0B0F19] border border-slate-800 rounded-xl space-y-1.5 text-xs font-mono text-slate-300">
+                <div class="flex items-center gap-2 text-emerald-400">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <strong>Dual-Engine Resilience Active</strong>
+                </div>
+                <p class="text-slate-400 text-[11px] leading-relaxed">
+                    If no API key is supplied, WanderLore runs automatically on high-contrast CartoDB dark matter vector tiles with full polyline route plotting.
+                </p>
+            </div>
+
+            <form onsubmit="handleSaveGmapsKey(event)" class="space-y-3">
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Google Maps API Key (Optional)</label>
+                    <input id="input-gmaps-key" type="text" placeholder="AIzaSy..." class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none font-mono">
+                </div>
+                <button type="submit" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs font-mono uppercase tracking-wider">
+                    Apply & Verify Key
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: SUBMIT SANCTUARY ==================== -->
+    <div id="submit-spot-modal" class="fixed inset-0 z-50 bg-[#0B0F19]/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-[#0F172A] border border-slate-800 rounded-2xl max-w-2xl w-full p-6 sm:p-7 space-y-5 shadow-2xl relative">
+            <button onclick="closeSubmitModal()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-lg bg-[#0B0F19] border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            <div class="space-y-1">
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">ETHICAL CROWDSOURCING</span>
+                <h2 class="font-display text-xl font-bold text-white tracking-tight">Record an Unlisted Sanctuary</h2>
+                <p class="text-xs text-slate-400">All submissions are vetted against Leave-No-Trace principles to prevent ecological degradation.</p>
+            </div>
+
+            <form id="submit-spot-form" onsubmit="handleSpotSubmit(event)" class="space-y-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Sanctuary Name *</label>
+                        <input id="sub-name" required type="text" placeholder="e.g. The Whispering Hermitage" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Category *</label>
+                        <select id="sub-category" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                            <option value="Forgotten Ruins">Forgotten Ruins</option>
+                            <option value="Stargazing Sanctuaries">Stargazing Sanctuaries</option>
+                            <option value="Sacred Groves">Sacred Groves</option>
+                            <option value="Subterranean & Geo">Subterranean & Geo</option>
+                            <option value="Ghost Towns">Ghost Towns</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Region / Valley *</label>
+                        <input id="sub-region" required type="text" placeholder="e.g. High Atlas Mountains" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Country *</label>
+                        <input id="sub-country" required type="text" placeholder="e.g. Morocco" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Tagline</label>
+                    <input id="sub-tagline" type="text" placeholder="A brief phrase describing its acoustic calm and aura" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Latitude</label>
+                        <input id="sub-lat" type="number" step="any" placeholder="31.2541" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-mono text-slate-300">Longitude</label>
+                        <input id="sub-lng" type="number" step="any" placeholder="-7.9821" class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Lore & Cultural Story *</label>
+                    <textarea id="sub-lore" required rows="3" placeholder="Tell the history, how it was safeguarded, why it remains tranquil..." class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-mono text-slate-300">Leave-No-Trace Protocol *</label>
+                    <input id="sub-lnt" required type="text" placeholder="e.g. Do not light campfires near ancient cedar roots; pack out all waste." class="w-full bg-[#0B0F19] border border-slate-800 p-2.5 rounded-lg text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeSubmitModal()" class="px-3.5 py-1.5 rounded-lg bg-[#0B0F19] border border-slate-800 text-xs font-mono text-slate-400 hover:text-slate-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-[#0B0F19] font-bold text-xs tracking-wider uppercase transition-colors">
+                        Submit for Guardian Review
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast Notification -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-200 flex items-center gap-3 px-4 py-3 rounded-xl bg-[#0F172A] border border-slate-700 text-slate-100 shadow-2xl font-mono text-xs max-w-sm pointer-events-none">
+        <i id="toast-icon" data-lucide="info" class="w-4 h-4 text-sky-400 shrink-0"></i>
+        <span id="toast-msg">Notification</span>
+    </div>
+
+    <!-- Enterprise Footer -->
+    <footer class="border-t border-slate-800/80 bg-[#0F172A]/70 py-6 px-4 text-xs font-mono text-slate-500 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="compass" class="w-4 h-4 text-sky-400"></i>
+                <span class="text-slate-200 font-display font-semibold text-sm">WanderLore</span>
+                <span>— Enterprise Offbeat Sanctuaries & Cartography Platform.</span>
+            </div>
+            <div class="flex items-center gap-4 text-slate-400 text-[11px]">
+                <button onclick="openContactModal()" class="hover:text-sky-400 transition-colors">Concierge</button>
+                <span>•</span>
+                <button onclick="openGmapsConfigModal()" class="hover:text-sky-400 transition-colors">Map Engine Config</button>
+                <span>•</span>
+                <span class="text-emerald-400">Leave No Trace Verified</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript Controller -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
